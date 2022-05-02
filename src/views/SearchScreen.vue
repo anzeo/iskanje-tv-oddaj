@@ -85,9 +85,14 @@ import _ from 'lodash';
 export default {
   name: "SearchScreen",
 
+  components: {
+  },
+
   data() {
     return {
       searchString: "",
+      searchFields: ['title', 'subtitle', 'description', 'text'],
+      autocompleteItems: [],
       items: [],
     }
   },
@@ -100,10 +105,10 @@ export default {
 
   methods: {
     async search() {
-      const fields = ['title:', 'subtitle:', 'description:', 'text:'];
+      const fields = ['title', 'subtitle', 'description', 'text'];
       let fieldOccurrence = [];
       fields.forEach(field => {
-        let search = this.searchString.search(new RegExp(`\\b${field}\\b`, 'g'))
+        let search = this.searchString.search(new RegExp(`\\b${field}\\b: `, 'g'))
         if (search !== -1) {
           console.log(field)
           let fieldData = {};
@@ -118,7 +123,7 @@ export default {
 
         let tmpSearchStr = this.searchString;
         for (let i = fieldOccurrence.length - 1; i >= 0; i--) {
-          let query = tmpSearchStr.trim().split(new RegExp(`\\b${fieldOccurrence[i].field}\\b`, 'g'));
+          let query = tmpSearchStr.trim().split(new RegExp(`\\b${fieldOccurrence[i].field}\\b: `, 'g'));
           fieldOccurrence[i].query = query.slice(-1)[0]
           tmpSearchStr = tmpSearchStr.substring(0, fieldOccurrence[i].index)
         }
@@ -127,7 +132,7 @@ export default {
       let queryString = [];
       if (fieldOccurrence.length) {
         fieldOccurrence.forEach(item => {
-          queryString.push(`${item.field.replace(':', '')}=${encodeURIComponent(item.query)}`);
+          queryString.push(`${item.field}=${encodeURIComponent(item.query)}`);
         })
       } else {
         queryString.push(`searchQuery=${encodeURIComponent(this.searchString)}`);
@@ -158,7 +163,6 @@ export default {
     formatOffsetTime(time) {
       return moment.utc(time * 1000).format('HH:mm:ss');
     },
-
   }
 }
 </script>
