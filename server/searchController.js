@@ -43,12 +43,18 @@ router.get('/search', (req, res) => {
                         }
                     },
                     {
-                        "regexp": {
-                            "subtitles.text.keyword": {
-                                value: `.*${escapeSpecialChars(req.query.searchQuery)}.*`,
-                                flags: "ALL",
-                                case_insensitive: true,
-                                max_determinized_states: 10000
+                        nested: {
+                            path: "speech",
+                            inner_hits: {},
+                            query: {
+                                "regexp": {
+                                    "speech.text.keyword": {
+                                        value: `.*${escapeSpecialChars(req.query.searchQuery)}.*`,
+                                        flags: "ALL",
+                                        case_insensitive: true,
+                                        max_determinized_states: 10000
+                                    }
+                                }
                             }
                         }
                     }
@@ -90,12 +96,18 @@ router.get('/search', (req, res) => {
                         }
                     }] : [],
                     ...req.query.text ? [{
-                        "regexp": {
-                            "subtitles.text.keyword": {
-                                value: `.*${escapeSpecialChars(req.query.text)}.*`,
-                                flags: "ALL",
-                                case_insensitive: true,
-                                max_determinized_states: 10000
+                        nested: {
+                            path: "speech",
+                            inner_hits: {},
+                            query: {
+                                "regexp": {
+                                    "speech.text.keyword": {
+                                        value: `.*${escapeSpecialChars(req.query.text)}.*`,
+                                        flags: "ALL",
+                                        case_insensitive: true,
+                                        max_determinized_states: 10000
+                                    }
+                                }
                             }
                         }
                     }] : []
@@ -116,44 +128,7 @@ router.get('/search', (req, res) => {
             res.send({data: resp.hits.hits})
         })
         .catch(err => {
-            res.status(400).send(err);
-        })
-})
-
-router.get('/searchSubtitles', (req, res) => {
-
-    if (!Object.prototype.hasOwnProperty.call(req.query, 'searchQuery')) {
-        throw new Error("Missing field searchQuery")
-    }
-
-    let body = {
-        size: 100,
-        from: 0,
-        index: 'tv-oddaje',
-        query: {
-            bool: {
-                should: [
-                    {
-                        "regexp": {
-                            "subtitles.text.keyword": {
-                                value: `.*${escapeSpecialChars(req.query.searchQuery)}.*`,
-                                flags: "ALL",
-                                case_insensitive: true,
-                                max_determinized_states: 10000
-                            }
-                        }
-                    }
-                ]
-            }
-        }
-    }
-
-    client.search(body)
-        .then(resp => {
-            res.send({data: resp.hits.hits})
-        })
-        .catch(err => {
-            res.status(400).send(err);
+            res.status(err.response.status).send(err);
         })
 })
 
