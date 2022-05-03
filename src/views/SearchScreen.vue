@@ -1,8 +1,12 @@
 <template>
   <div class="container-fluid">
+
+    <loading :active="isLoading" :can-cancel="false"></loading>
     <b-row class="mt-4">
       <b-col md="10" class="mx-auto">
         <b-input-group>
+          <vue-feather v-tooltip="{ content: '<p>Kako deluje iskanje</p>', html: true }" type="help-circle" size="18"
+                       class="me-2 align-self-center"></vue-feather>
           <template #append>
             <b-button class="d-flex align-items-center" @click="search">
               <vue-feather type="search" size="18"></vue-feather>
@@ -13,24 +17,6 @@
         </b-input-group>
       </b-col>
     </b-row>
-    <!--    <b-row>-->
-    <!--      <b-col md="10" class="mx-auto text-end">-->
-    <!--        <small>Išči po:</small>-->
-    <!--        <b-dropdown id="dropdown" variant="none" size="sm">-->
-    <!--          <template #button-content>-->
-    <!--            <span>{{ searchBy === 'metadata' ? "Metapodatkih" : "Podnapisih" }}</span>-->
-    <!--          </template>-->
-    <!--          <b-dropdown-item @click="searchBy = 'metadata'" link-class="d-flex align-items-center">-->
-    <!--            <vue-feather type="check" size="15" v-if="searchBy === 'metadata'" class="me-1"></vue-feather>-->
-    <!--            Metapodatkih-->
-    <!--          </b-dropdown-item>-->
-    <!--          <b-dropdown-item @click="searchBy = 'subtitles'" link-class="d-flex align-items-center">-->
-    <!--            <vue-feather type="check" size="15" v-if="searchBy === 'subtitles'" class="me-1"></vue-feather>-->
-    <!--            Podnapisih-->
-    <!--          </b-dropdown-item>-->
-    <!--        </b-dropdown>-->
-    <!--      </b-col>-->
-    <!--    </b-row>-->
 
     <b-row class="mt-5">
       <b-col md="12" class="mb-3">
@@ -44,12 +30,24 @@
              style="border: 1px solid; border-radius: 8px; max-height: 350px">
           <p class="fw-bold mb-0">{{ item._source.metadata.title }}</p>
           <p class="mb-3 small">{{ item._source.metadata.subtitle }}</p>
-          <small class="fw-bold">Čas trajanja: </small>
-          <p class="mb-2"> {{ formatLength(item._source.metadata.duration) }}</p>
-          <small class="fw-bold">Datum predvajanja: </small>
-          <p class="mb-2">{{ formatDate(item._source.metadata.playDate) }}</p>
-          <small class="fw-bold">Opis: </small>
-          <p class="overflow-auto">{{ item._source.metadata.description }}</p>
+          <template v-if="item.inner_hits && item.inner_hits.speech.hits.hits.length">
+            <small class="fw-bold">Ujemajoči podnapisi: </small>
+            <div v-for="subtitle in item.inner_hits.speech.hits.hits" :key="'subtitle_' + subtitle._id"
+                 class="d-table-row">
+              <small class="d-table-cell pe-2">
+                {{ formatOffsetTime(subtitle._source.offset) }}
+              </small>
+              <p class="pb-2 d-table-cell">{{ subtitle._source.text }}</p>
+            </div>
+          </template>
+          <template v-else>
+            <small class="fw-bold">Čas trajanja: </small>
+            <p class="mb-2"> {{ formatLength(item._source.metadata.duration) }}</p>
+            <small class="fw-bold">Datum predvajanja: </small>
+            <p class="mb-2">{{ formatDate(item._source.metadata.playDate) }}</p>
+            <small class="fw-bold">Opis: </small>
+            <p class="overflow-auto">{{ item._source.metadata.description }}</p>
+          </template>
         </div>
       </b-col>
       <!--      <template v-else>-->
@@ -81,15 +79,19 @@
 import app from "@/main";
 import moment from "moment";
 import _ from 'lodash';
+import Loading from 'vue3-loading-overlay';
+import 'vue3-loading-overlay/dist/vue3-loading-overlay.css';
 
 export default {
   name: "SearchScreen",
 
   components: {
+    Loading
   },
 
   data() {
     return {
+      isLoading: false,
       searchString: "",
       searchFields: ['title', 'subtitle', 'description', 'text'],
       autocompleteItems: [],
@@ -123,8 +125,9 @@ export default {
 
         let tmpSearchStr = this.searchString;
         for (let i = fieldOccurrence.length - 1; i >= 0; i--) {
-          let query = tmpSearchStr.trim().split(new RegExp(`\\b${fieldOccurrence[i].field}\\b: `, 'g'));
-          fieldOccurrence[i].query = query.slice(-1)[0]
+          let query = tmpSearchStr.split(new RegExp(`\\b${fieldOccurrence[i].field}\\b: `, 'g'));
+          console.log(query)
+          fieldOccurrence[i].query = query.slice(-1)[0].trim();
           tmpSearchStr = tmpSearchStr.substring(0, fieldOccurrence[i].index)
         }
       }
@@ -135,19 +138,23 @@ export default {
           queryString.push(`${item.field}=${encodeURIComponent(item.query)}`);
         })
       } else {
-        queryString.push(`searchQuery=${encodeURIComponent(this.searchString)}`);
+        queryString.push(`searchQuery=${encodeURIComponent(this.searchString === '' ? "" : this.searchString)}`);
       }
 
       console.log(queryString.join('&'))
       let url = `${app.config.globalProperties.api.baseUrl}search?${queryString.join('&')}`;
 
+      this.isLoading = true;
+
       await app.axios.get(url)
           .then(resp => {
             this.items = resp.data.data;
+            this.isLoading = false;
             console.log(resp)
           })
           .catch(err => {
             console.error(err)
+            this.isLoading = false;
           })
     },
 

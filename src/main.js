@@ -6,9 +6,11 @@ import VueFeather from 'vue-feather';
 import axios from "axios";
 import VueAxios from "vue-axios";
 import moment from "moment";
+import FloatingVue from 'floating-vue'
 
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap-vue-3/dist/bootstrap-vue-3.css';
+import 'floating-vue/dist/style.css'
 
 import './assets/styles/style.scss';
 
@@ -17,6 +19,7 @@ const app = createApp(App)
 app.use(router);
 app.use(BootstrapVue3);
 app.use(VueAxios, axios);
+app.use(FloatingVue)
 
 app.component(VueFeather.name, VueFeather);
 
