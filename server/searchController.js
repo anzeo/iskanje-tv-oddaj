@@ -8,13 +8,13 @@ router.get('/search', (req, res) => {
 
     console.log(req.query)
     let query;
-    if (req.query.searchQuery) {
+    if (req.query.searchQuery) {    // || req.query.searchQuery === ''
         query = {
             bool: {
                 should: [
                     {
                         "regexp": {
-                            "metadata.title.keyword": {
+                            "metadata.title": {
                                 value: `.*${escapeSpecialChars(req.query.searchQuery)}.*`,
                                 flags: "ALL",
                                 case_insensitive: true,
@@ -24,7 +24,7 @@ router.get('/search', (req, res) => {
                     },
                     {
                         "regexp": {
-                            "metadata.subtitle.keyword": {
+                            "metadata.subtitle": {
                                 value: `.*${escapeSpecialChars(req.query.searchQuery)}.*`,
                                 flags: "ALL",
                                 case_insensitive: true,
@@ -34,7 +34,7 @@ router.get('/search', (req, res) => {
                     },
                     {
                         "regexp": {
-                            "metadata.description.keyword": {
+                            "metadata.description": {
                                 value: `.*${escapeSpecialChars(req.query.searchQuery)}.*`,
                                 flags: "ALL",
                                 case_insensitive: true,
@@ -48,7 +48,7 @@ router.get('/search', (req, res) => {
                             inner_hits: {},
                             query: {
                                 "regexp": {
-                                    "speech.text.keyword": {
+                                    "speech.text": {
                                         value: `.*${escapeSpecialChars(req.query.searchQuery)}.*`,
                                         flags: "ALL",
                                         case_insensitive: true,
@@ -67,7 +67,7 @@ router.get('/search', (req, res) => {
                 must: [
                     ...req.query.title ? [{
                         "regexp": {
-                            "metadata.title.keyword": {
+                            "metadata.title": {
                                 value: `.*${escapeSpecialChars(req.query.title)}.*`,
                                 flags: "ALL",
                                 case_insensitive: true,
@@ -77,7 +77,7 @@ router.get('/search', (req, res) => {
                     }] : [],
                     ...req.query.subtitle ? [{
                         "regexp": {
-                            "metadata.subtitle.keyword": {
+                            "metadata.subtitle": {
                                 value: `.*${escapeSpecialChars(req.query.subtitle)}.*`,
                                 flags: "ALL",
                                 case_insensitive: true,
@@ -87,7 +87,7 @@ router.get('/search', (req, res) => {
                     }] : [],
                     ...req.query.description ? [{
                         "regexp": {
-                            "metadata.description.keyword": {
+                            "metadata.description": {
                                 value: `.*${escapeSpecialChars(req.query.description)}.*`,
                                 flags: "ALL",
                                 case_insensitive: true,
@@ -101,7 +101,7 @@ router.get('/search', (req, res) => {
                             inner_hits: {},
                             query: {
                                 "regexp": {
-                                    "speech.text.keyword": {
+                                    "speech.text": {
                                         value: `.*${escapeSpecialChars(req.query.text)}.*`,
                                         flags: "ALL",
                                         case_insensitive: true,
@@ -117,9 +117,9 @@ router.get('/search', (req, res) => {
     }
 
     let body = {
-        size: 100,
+        size: 30,
         from: 0,
-        index: 'tv-oddaje',
+        index: 'oddaje-nested',
         query: query
     }
 
@@ -128,7 +128,7 @@ router.get('/search', (req, res) => {
             res.send({data: resp.hits.hits})
         })
         .catch(err => {
-            res.status(err.response.status).send(err);
+            res.status(err.meta.statusCode).send(err);
         })
 })
 
@@ -152,7 +152,7 @@ router.post("/fillData", async (req, res) => {
 
         let document = {
             "metadata": {},
-            "subtitle": []
+            "speech": []
         }
 
         len = Math.floor(Math.random() * (31 - 10) + 10);
@@ -173,7 +173,7 @@ router.post("/fillData", async (req, res) => {
             len = Math.floor(Math.random() * (71 - 30) + 30);
             subtitle.text = generateString(len)
             subtitle.offset = Math.floor(Math.random() * (document.metadata.duration));
-            document.subtitle.push(subtitle)
+            document.speech.push(subtitle)
         }
         bulkData.push(document)
     }
