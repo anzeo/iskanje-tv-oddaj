@@ -117,15 +117,25 @@ router.get('/search', (req, res) => {
     }
 
     let body = {
-        size: 30,
-        from: 0,
         index: 'oddaje-nested',
         query: query
     }
 
+    if (req.query.params) {
+        let params = JSON.parse(req.query.params);
+        console.log(params)
+
+        if (params.take) {
+            body.size = params.take;
+            if (params.page) {
+                body.from = (params.page - 1) * params.take;
+            }
+        }
+    }
+
     client.search(body)
         .then(resp => {
-            res.send({data: resp.hits.hits})
+            res.send({data: resp.hits.hits, totalHits: resp.hits.total.value})
         })
         .catch(err => {
             res.status(err.meta.statusCode).send(err);
