@@ -8,21 +8,22 @@
           <vue-feather v-tooltip="{ content: '<p>Kako deluje iskanje</p>', html: true }" type="help-circle" size="18"
                        class="me-2 align-self-center"></vue-feather>
           <template #append>
-            <b-button class="d-flex align-items-center" @click="search">
+            <b-button class="d-flex align-items-center" @click="search(true)">
               <vue-feather type="search" size="18"></vue-feather>
             </b-button>
           </template>
           <b-form-input v-model="searchString" placeholder="Vnesi niz za iskanje"
-                        @keyup.enter="search"></b-form-input>
+                        @keyup.enter="search(true)"></b-form-input>
         </b-input-group>
       </b-col>
     </b-row>
 
     <b-row class="mt-5">
-      <b-col md="12" class="mb-3">
-        <h4>Rezultati iskanja</h4>
+      <b-col md="12" class="mb-4 d-flex align-items-center">
+        <h4 class="mb-0">Rezultati iskanja</h4>
+        <small class="ms-3" v-if="ctx.count">({{ctx.count}} rezultatov)</small>
       </b-col>
-      <b-col v-if="!items.length">
+      <b-col v-if="!ctx.count">
         <p>Ni rezultatov za prikaz...</p>
       </b-col>
       <b-col v-else v-for="item in items" :key="'item_' + item._id" class="mb-3" md="4" sm="6">
@@ -50,6 +51,16 @@
           </template>
         </div>
       </b-col>
+
+      <b-pagination
+          v-if="ctx.count !== 0"
+          v-model="ctx.currentPage"
+          :total-rows="ctx.count"
+          :per-page="ctx.perPage"
+          class="my-4"
+          align="center"
+          @update:modelValue="search(false)">
+      </b-pagination>
       <!--      <template v-else>-->
       <!--        <b-col v-if="!items.length">-->
       <!--          <p>Ni rezultatov za prikaz...</p>-->
@@ -93,9 +104,15 @@ export default {
     return {
       isLoading: false,
       searchString: "",
+      prevSearchString: "",
       searchFields: ['title', 'subtitle', 'description', 'text'],
       autocompleteItems: [],
       items: [],
+      ctx: {
+        currentPage: 1,
+        perPage: 12,
+        count: 0
+      }
     }
   },
 
@@ -106,11 +123,18 @@ export default {
   },
 
   methods: {
-    async search() {
+    async search(newSearch = false) {
+      if (newSearch) {
+        this.ctx.currentPage = 1;
+        this.prevSearchString = this.searchString;
+      }
+
+      console.log(this.prevSearchString)
+
       const fields = ['title', 'subtitle', 'description', 'text'];
       let fieldOccurrence = [];
       fields.forEach(field => {
-        let search = this.searchString.search(new RegExp(`\\b${field}\\b: `, 'g'))
+        let search = this.prevSearchString.search(new RegExp(`\\b${field}\\b: `, 'g'))
         if (search !== -1) {
           console.log(field)
           let fieldData = {};
@@ -123,10 +147,9 @@ export default {
       if (fieldOccurrence.length) {
         fieldOccurrence = _.orderBy(fieldOccurrence, ['index'], ['asc']);
 
-        let tmpSearchStr = this.searchString;
+        let tmpSearchStr = this.prevSearchString;
         for (let i = fieldOccurrence.length - 1; i >= 0; i--) {
           let query = tmpSearchStr.split(new RegExp(`\\b${fieldOccurrence[i].field}\\b: `, 'g'));
-          console.log(query)
           fieldOccurrence[i].query = query.slice(-1)[0].trim();
           tmpSearchStr = tmpSearchStr.substring(0, fieldOccurrence[i].index)
         }
@@ -138,19 +161,27 @@ export default {
           queryString.push(`${item.field}=${encodeURIComponent(item.query)}`);
         })
       } else {
-        queryString.push(`searchQuery=${encodeURIComponent(this.searchString === '' ? "" : this.searchString)}`);
+        queryString.push(`searchQuery=${encodeURIComponent(this.prevSearchString === '' ? "" : this.searchString)}`);
       }
 
-      console.log(queryString.join('&'))
-      let url = `${app.config.globalProperties.api.baseUrl}search?${queryString.join('&')}`;
+      let params = {
+        take: this.ctx.perPage,
+        page: this.ctx.currentPage
+      };
+
+      let encodedParams = encodeURIComponent(JSON.stringify(params));
+
+      // console.log(queryString.join('&'))
+      let url = `${app.config.globalProperties.api.baseUrl}search?${queryString.join('&')}&params=${encodedParams}`;
 
       this.isLoading = true;
 
       await app.axios.get(url)
           .then(resp => {
             this.items = resp.data.data;
+            this.ctx.count = resp.data.totalHits;
             this.isLoading = false;
-            console.log(resp)
+            // console.log(resp)
           })
           .catch(err => {
             console.error(err)
