@@ -1,27 +1,28 @@
 <template>
   <div class="container-fluid">
-
     <loading :active="isLoading" :can-cancel="false"></loading>
-    <b-row class="mt-4">
+    <b-row class="py-4" style="background-color: lightblue">
       <b-col md="10" class="mx-auto">
         <b-input-group>
-          <vue-feather v-tooltip="{ content: '<p>Kako deluje iskanje</p>', html: true }" type="help-circle" size="18"
-                       class="me-2 align-self-center"></vue-feather>
+          <vue-feather
+              type="help-circle" size="18"
+              class="me-2 align-self-center link-secondary" style="cursor: pointer"
+              @click="$bvModal.show('searchInstructionsModal')"></vue-feather>
           <template #append>
             <b-button class="d-flex align-items-center" @click="search(true)">
               <vue-feather type="search" size="18"></vue-feather>
             </b-button>
           </template>
           <b-form-input v-model="searchString" placeholder="Vnesi niz za iskanje"
-                        @keyup.enter="search(true)"></b-form-input>
+                        @keyup.enter="search(true)" style="border-bottom-left-radius: 0.25rem; border-top-left-radius: 0.25rem"></b-form-input>
         </b-input-group>
       </b-col>
     </b-row>
 
-    <b-row class="mt-5">
+    <b-row class="mt-3">
       <b-col md="12" class="mb-4 d-flex align-items-center">
         <h4 class="mb-0">Rezultati iskanja</h4>
-        <small class="ms-3" v-if="ctx.count">({{ctx.count}} rezultatov)</small>
+        <small class="ms-3" v-if="ctx.count">({{ ctx.count }} rezultatov)</small>
       </b-col>
       <b-col v-if="!ctx.count">
         <p>Ni rezultatov za prikaz...</p>
@@ -83,6 +84,24 @@
       <!--      </template>-->
 
     </b-row>
+
+    <b-modal id="searchInstructionsModal" title="Navodila za iskanje" ok-only>
+      <div>
+        <p class="mb-0">Iskanje deluje po poljih:</p>
+        <small>
+          <ul>
+            <li>title (naslov),</li>
+            <li>subtitle (podnaslov),</li>
+            <li>description (opis) in</li>
+            <li>text (podnapis)</li>
+          </ul>
+        </small>
+        <p class="mb-0 fw-bold">Iskanje po vseh poljih (relacija ALI)</p>
+        <small><b>Primer vnosa: </b><em>iskalni niz</em></small>
+        <p class="mb-0 mt-3 fw-bold">Iskanje po željenih poljih (relacija IN)</p>
+        <small><b>Primer vnosa: </b><em>imePolja1: iskalni niz imePolja2: iskalni niz</em></small>
+      </div>
+    </b-modal>
   </div>
 </template>
 
@@ -208,5 +227,10 @@ export default {
 <style>
 #dropdown.btn:focus {
   box-shadow: none !important;
+}
+
+.v-popper__inner {
+  max-width: 180px !important;
+  text-align: center;
 }
 </style>

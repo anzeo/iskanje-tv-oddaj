@@ -142,7 +142,7 @@ router.get('/search', (req, res) => {
         })
 })
 
-const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ';
 
 function generateString(length) {
     let result = '';
