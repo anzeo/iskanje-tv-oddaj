@@ -117,7 +117,7 @@ router.get('/search', (req, res) => {
     }
 
     let body = {
-        index: 'oddaje-nested',
+        index: 'oddaje-nested',     //oddaje-nested | tv-oddaje
         query: query
     }
 

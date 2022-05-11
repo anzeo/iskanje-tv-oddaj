@@ -1,7 +1,7 @@
 <template>
-  <div class="container-fluid">
+  <div>
     <loading :active="isLoading" :can-cancel="false"></loading>
-    <b-row class="py-4" style="background-color: lightblue">
+    <b-row class="m-0 searchBar-row">
       <b-col md="10" class="mx-auto">
         <b-input-group>
           <vue-feather
@@ -14,95 +14,100 @@
             </b-button>
           </template>
           <b-form-input v-model="searchString" placeholder="Vnesi niz za iskanje"
-                        @keyup.enter="search(true)" style="border-bottom-left-radius: 0.25rem; border-top-left-radius: 0.25rem"></b-form-input>
+                        @keyup.enter="search(true)"
+                        style="border-bottom-left-radius: 0.25rem; border-top-left-radius: 0.25rem"></b-form-input>
         </b-input-group>
       </b-col>
     </b-row>
+    <div class="container-fluid">
+      <b-row class="mt-3">
+        <b-col md="12" class="mb-4 d-flex align-items-center">
+          <h4 class="mb-0">Rezultati iskanja</h4>
+          <small class="ms-3" v-if="ctx.count">({{ ctx.count }} rezultatov)</small>
+        </b-col>
+        <b-col v-if="!ctx.count">
+          <p>Ni rezultatov za prikaz...</p>
+        </b-col>
+        <b-col v-else v-for="item in items" :key="'item_' + item._id" class="mb-3" md="4" sm="6">
+          <div class="p-2 d-flex flex-column overflow-hidden"
+               style="border: 1px solid; border-radius: 8px; max-height: 350px">
+            <p class="fw-bold mb-0">{{ item._source.metadata.title }}</p>
+            <p class="mb-3 small">{{ item._source.metadata.subtitle }}</p>
+            <template v-if="item.inner_hits && item.inner_hits.speech.hits.hits.length">
+              <small class="fw-bold">Ujemajoči podnapisi: </small>
+              <div class="overflow-auto">
+                <div v-for="subtitle in item.inner_hits.speech.hits.hits" :key="'subtitle_' + subtitle._id"
+                     class="d-table-row">
+                  <small class="d-table-cell pe-2">
+                    {{ formatOffsetTime(subtitle._source.offset) }}
+                  </small>
+                  <p class="pb-2 d-table-cell">{{ subtitle._source.text }}</p>
+                </div>
+              </div>
+            </template>
+            <template v-else>
+              <small class="fw-bold">Čas trajanja: </small>
+              <p class="mb-2"> {{ formatLength(item._source.metadata.duration) }}</p>
+              <small class="fw-bold">Datum predvajanja: </small>
+              <p class="mb-2">{{ formatDate(item._source.metadata.playDate) }}</p>
+              <small class="fw-bold">Opis: </small>
+              <p class="overflow-auto">{{ item._source.metadata.description }}</p>
+            </template>
+          </div>
+        </b-col>
 
-    <b-row class="mt-3">
-      <b-col md="12" class="mb-4 d-flex align-items-center">
-        <h4 class="mb-0">Rezultati iskanja</h4>
-        <small class="ms-3" v-if="ctx.count">({{ ctx.count }} rezultatov)</small>
-      </b-col>
-      <b-col v-if="!ctx.count">
-        <p>Ni rezultatov za prikaz...</p>
-      </b-col>
-      <b-col v-else v-for="item in items" :key="'item_' + item._id" class="mb-3" md="4" sm="6">
-        <div class="p-2 d-flex flex-column overflow-hidden"
-             style="border: 1px solid; border-radius: 8px; max-height: 350px">
-          <p class="fw-bold mb-0">{{ item._source.metadata.title }}</p>
-          <p class="mb-3 small">{{ item._source.metadata.subtitle }}</p>
-          <template v-if="item.inner_hits && item.inner_hits.speech.hits.hits.length">
-            <small class="fw-bold">Ujemajoči podnapisi: </small>
-            <div v-for="subtitle in item.inner_hits.speech.hits.hits" :key="'subtitle_' + subtitle._id"
-                 class="d-table-row">
-              <small class="d-table-cell pe-2">
-                {{ formatOffsetTime(subtitle._source.offset) }}
-              </small>
-              <p class="pb-2 d-table-cell">{{ subtitle._source.text }}</p>
-            </div>
-          </template>
-          <template v-else>
-            <small class="fw-bold">Čas trajanja: </small>
-            <p class="mb-2"> {{ formatLength(item._source.metadata.duration) }}</p>
-            <small class="fw-bold">Datum predvajanja: </small>
-            <p class="mb-2">{{ formatDate(item._source.metadata.playDate) }}</p>
-            <small class="fw-bold">Opis: </small>
-            <p class="overflow-auto">{{ item._source.metadata.description }}</p>
-          </template>
+        <b-pagination
+            v-if="ctx.count !== 0"
+            v-model="ctx.currentPage"
+            :total-rows="ctx.count"
+            :per-page="ctx.perPage"
+            class="my-4"
+            align="center"
+            @update:modelValue="search(false)">
+        </b-pagination>
+        <!--      <template v-else>-->
+        <!--        <b-col v-if="!items.length">-->
+        <!--          <p>Ni rezultatov za prikaz...</p>-->
+        <!--        </b-col>-->
+        <!--        <b-col v-else v-for="item in items" :key="'item_' + item._id" class="mb-3" md="4" sm="6">-->
+        <!--          <div class="p-2" style="border: 1px solid; border-radius: 8px">-->
+        <!--            <p class="fw-bold">{{ item._source.metadata.title }}</p>-->
+        <!--            <small class="fw-bold">Podnapisi: </small>-->
+        <!--            <div style="max-height: 150px; overflow-y: auto">-->
+        <!--              <div v-for="(subtitle, index) in item._source.subtitles" :key="'subtitle_' + index"-->
+        <!--                   class="d-table-row">-->
+        <!--                <small class="d-table-cell pe-2">-->
+        <!--                  {{ formatOffsetTime(subtitle.offset) }}-->
+        <!--                </small>-->
+        <!--                <p class="pb-2 d-table-cell">{{ subtitle.text }}</p>-->
+        <!--              </div>-->
+        <!--            </div>-->
+        <!--          </div>-->
+        <!--        </b-col>-->
+        <!--      </template>-->
+
+      </b-row>
+
+      <b-modal id="searchInstructionsModal" title="Navodila za iskanje" ok-only>
+        <div>
+          <p class="mb-0">Iskanje deluje po poljih:</p>
+          <small>
+            <ul>
+              <li>title (naslov),</li>
+              <li>subtitle (podnaslov),</li>
+              <li>description (opis) in</li>
+              <li>text (podnapis)</li>
+            </ul>
+          </small>
+          <p class="mb-0 fw-bold">Iskanje po vseh poljih (relacija ALI)</p>
+          <small><b>Primer vnosa: </b><em>iskalni niz</em></small>
+          <p class="mb-0 mt-3 fw-bold">Iskanje po željenih poljih (relacija IN)</p>
+          <small><b>Primer vnosa: </b><em>imePolja1: iskalni niz imePolja2: iskalni niz</em></small>
         </div>
-      </b-col>
-
-      <b-pagination
-          v-if="ctx.count !== 0"
-          v-model="ctx.currentPage"
-          :total-rows="ctx.count"
-          :per-page="ctx.perPage"
-          class="my-4"
-          align="center"
-          @update:modelValue="search(false)">
-      </b-pagination>
-      <!--      <template v-else>-->
-      <!--        <b-col v-if="!items.length">-->
-      <!--          <p>Ni rezultatov za prikaz...</p>-->
-      <!--        </b-col>-->
-      <!--        <b-col v-else v-for="item in items" :key="'item_' + item._id" class="mb-3" md="4" sm="6">-->
-      <!--          <div class="p-2" style="border: 1px solid; border-radius: 8px">-->
-      <!--            <p class="fw-bold">{{ item._source.metadata.title }}</p>-->
-      <!--            <small class="fw-bold">Podnapisi: </small>-->
-      <!--            <div style="max-height: 150px; overflow-y: auto">-->
-      <!--              <div v-for="(subtitle, index) in item._source.subtitles" :key="'subtitle_' + index"-->
-      <!--                   class="d-table-row">-->
-      <!--                <small class="d-table-cell pe-2">-->
-      <!--                  {{ formatOffsetTime(subtitle.offset) }}-->
-      <!--                </small>-->
-      <!--                <p class="pb-2 d-table-cell">{{ subtitle.text }}</p>-->
-      <!--              </div>-->
-      <!--            </div>-->
-      <!--          </div>-->
-      <!--        </b-col>-->
-      <!--      </template>-->
-
-    </b-row>
-
-    <b-modal id="searchInstructionsModal" title="Navodila za iskanje" ok-only>
-      <div>
-        <p class="mb-0">Iskanje deluje po poljih:</p>
-        <small>
-          <ul>
-            <li>title (naslov),</li>
-            <li>subtitle (podnaslov),</li>
-            <li>description (opis) in</li>
-            <li>text (podnapis)</li>
-          </ul>
-        </small>
-        <p class="mb-0 fw-bold">Iskanje po vseh poljih (relacija ALI)</p>
-        <small><b>Primer vnosa: </b><em>iskalni niz</em></small>
-        <p class="mb-0 mt-3 fw-bold">Iskanje po željenih poljih (relacija IN)</p>
-        <small><b>Primer vnosa: </b><em>imePolja1: iskalni niz imePolja2: iskalni niz</em></small>
-      </div>
-    </b-modal>
+      </b-modal>
+    </div>
   </div>
+
 </template>
 
 <script>
