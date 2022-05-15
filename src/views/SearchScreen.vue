@@ -3,20 +3,43 @@
     <loading :active="isLoading" :can-cancel="false"></loading>
     <b-row class="m-0 searchBar-row">
       <b-col md="10" class="mx-auto">
-        <b-input-group>
+        <div class="d-flex">
           <vue-feather
               type="help-circle" size="18"
               class="me-2 align-self-center link-secondary" style="cursor: pointer"
               @click="$bvModal.show('searchInstructionsModal')"></vue-feather>
-          <template #append>
-            <b-button class="d-flex align-items-center" @click="search(true)">
-              <vue-feather type="search" size="18"></vue-feather>
-            </b-button>
-          </template>
-          <b-form-input v-model="searchString" placeholder="Vnesi niz za iskanje"
-                        @keyup.enter="search(true)"
-                        style="border-bottom-left-radius: 0.25rem; border-top-left-radius: 0.25rem"></b-form-input>
-        </b-input-group>
+          <div class="w-100">
+            <b-input-group>
+              <template #append>
+                <b-button class="d-flex align-items-center" @click="search(true)" v-b-toggle.collapse-1>
+                  <vue-feather type="search" size="18"></vue-feather>
+                </b-button>
+              </template>
+              <template #prepend>
+                <div class="filterIcon" style="border-top-left-radius: 0.25rem;"
+                     :style="[!filtersVisible ? 'border-bottom-left-radius: 0.25rem': '']"
+                     v-b-toggle.filters>
+                  <vue-feather type="sliders" size="18"
+                               style="color: rgb(160, 160, 160); transform: rotate(90deg)"></vue-feather>
+                </div>
+              </template>
+              <b-form-input v-model="searchString" placeholder="Vnesi niz za iskanje"
+                            @keyup.enter="search(true)"
+                            style="border-left: 0; padding-left: 6px"></b-form-input>
+            </b-input-group>
+            <div class="position-relative" style="max-width: 600px; margin-right: 43px">
+              <b-collapse id="filters" class="position-absolute w-100" @hidden="filtersVisible = false"
+                          @show="filtersVisible = true">
+                <b-card style="border-top: 0; border-radius: 0 0 0.25rem 0.25rem; border-color: rgb(206, 212, 218)">
+                  <p class="card-text">Collapse contents Here</p>
+                  <b-collapse id="collapse-1-inner" class="mt-2">
+                    <b-card>Hello!</b-card>
+                  </b-collapse>
+                </b-card>
+              </b-collapse>
+            </div>
+          </div>
+        </div>
       </b-col>
     </b-row>
     <div class="container-fluid">
@@ -136,7 +159,8 @@ export default {
         currentPage: 1,
         perPage: 12,
         count: 0
-      }
+      },
+      filtersVisible: false
     }
   },
 
@@ -234,8 +258,13 @@ export default {
   box-shadow: none !important;
 }
 
-.v-popper__inner {
-  max-width: 180px !important;
-  text-align: center;
+.filterIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  background: white;
+  border: 1px solid rgb(206, 212, 218);
+  cursor: pointer;
 }
 </style>
