@@ -8,6 +8,8 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@cloudgeek/playcore-hls": "^0.1.7",
+    "@cloudgeek/vue3-video-player": "^0.3.10",
     "@elastic/elasticsearch": "^8.1.0",
     "@popperjs/core": "^2.11.4",
     "axios": "^0.26.1",

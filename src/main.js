@@ -6,7 +6,8 @@ import VueFeather from 'vue-feather';
 import axios from "axios";
 import VueAxios from "vue-axios";
 import moment from "moment";
-import FloatingVue from 'floating-vue'
+import FloatingVue from 'floating-vue';
+import Vue3VideoPlayer from '@cloudgeek/vue3-video-player';
 
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap-vue-3/dist/bootstrap-vue-3.css';
@@ -19,7 +20,8 @@ const app = createApp(App)
 app.use(router);
 app.use(BootstrapVue3);
 app.use(VueAxios, axios);
-app.use(FloatingVue)
+app.use(FloatingVue);
+app.use(Vue3VideoPlayer);
 
 app.component(VueFeather.name, VueFeather);
 

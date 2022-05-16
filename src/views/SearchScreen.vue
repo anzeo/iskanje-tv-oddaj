@@ -11,7 +11,7 @@
           <div class="w-100">
             <b-input-group>
               <template #append>
-                <b-button class="d-flex align-items-center" @click="search(true)" v-b-toggle.collapse-1>
+                <b-button class="d-flex align-items-center" @click="search(true, 'query')" v-b-toggle.collapse-1>
                   <vue-feather type="search" size="18"></vue-feather>
                 </b-button>
               </template>
@@ -23,18 +23,31 @@
                                style="color: rgb(160, 160, 160); transform: rotate(90deg)"></vue-feather>
                 </div>
               </template>
-              <b-form-input v-model="searchString" placeholder="Vnesi niz za iskanje"
-                            @keyup.enter="search(true)"
+              <b-form-input v-model="searchFilters.searchString" placeholder="Vnesi niz za iskanje"
+                            @keyup.enter="search(true, 'query')"
                             style="border-left: 0; padding-left: 6px"></b-form-input>
             </b-input-group>
             <div class="position-relative" style="max-width: 600px; margin-right: 43px">
               <b-collapse id="filters" class="position-absolute w-100" @hidden="filtersVisible = false"
                           @show="filtersVisible = true">
-                <b-card style="border-top: 0; border-radius: 0 0 0.25rem 0.25rem; border-color: rgb(206, 212, 218)">
-                  <p class="card-text">Collapse contents Here</p>
-                  <b-collapse id="collapse-1-inner" class="mt-2">
-                    <b-card>Hello!</b-card>
-                  </b-collapse>
+                <b-card id="filtersCard"
+                        style="border-top: 0; border-radius: 0 0 0.25rem 0.25rem; border-color: rgb(206, 212, 218)">
+                  <b-form-group label="Naslov" label-for="title" label-class="py-0" label-cols-md="2" label-size="sm">
+                    <b-form-input id="title" v-model="searchFilters.title"></b-form-input>
+                  </b-form-group>
+                  <b-form-group label="Opis" label-for="description" label-class="py-0" label-cols-md="2"
+                                label-size="sm">
+                    <b-form-input id="description" v-model="searchFilters.description"></b-form-input>
+                  </b-form-group>
+                  <b-form-group label="Podnapisi" label-for="subtitles" label-class="py-0" label-cols-md="2"
+                                label-size="sm">
+                    <b-form-input id="subtitles" v-model="searchFilters.subtitles"></b-form-input>
+                  </b-form-group>
+                  <b-row class="pt-2">
+                    <b-col class="d-flex justify-content-end">
+                      <b-button size="sm" variant="primary" @click="search(true, 'filters')">Poišči</b-button>
+                    </b-col>
+                  </b-row>
                 </b-card>
               </b-collapse>
             </div>
@@ -43,6 +56,9 @@
       </b-col>
     </b-row>
     <div class="container-fluid">
+      <!--      <vue3-video-player :core="HLSCore"-->
+      <!--                         :view-core="viewCore.bind(null, 'video1')"-->
+      <!--                         :src="'https://vodstr.rtvslo.si/encrypted11/_definst_/2022/05/16/Poroila_ob_10h2022-05-16-100604-SLO1_1.mp4/playlist.m3u8?keylockhash=WZfRyRDTeNyrQF5wpD3uYUziG9KLy-aVfbBtKt8ILE0'"></vue3-video-player>-->
       <b-row class="mt-3">
         <b-col md="12" class="mb-4 d-flex align-items-center">
           <h4 class="mb-0">Rezultati iskanja</h4>
@@ -139,6 +155,7 @@ import moment from "moment";
 import _ from 'lodash';
 import Loading from 'vue3-loading-overlay';
 import 'vue3-loading-overlay/dist/vue3-loading-overlay.css';
+import HLSCore from '@cloudgeek/playcore-hls';
 
 export default {
   name: "SearchScreen",
@@ -150,6 +167,13 @@ export default {
   data() {
     return {
       isLoading: false,
+      searchFilters: {
+        searchString: "",
+        title: "",
+        description: "",
+        subtitles: ""
+      },
+      prevSearch: null,
       searchString: "",
       prevSearchString: "",
       searchFields: ['title', 'subtitle', 'description', 'text'],
@@ -160,7 +184,9 @@ export default {
         perPage: 12,
         count: 0
       },
-      filtersVisible: false
+      filtersVisible: false,
+      HLSCore,
+      players: {}
     }
   },
 
@@ -171,70 +197,71 @@ export default {
   },
 
   methods: {
-    async search(newSearch = false) {
+    async search(newSearch = false, searchType = null) {
       if (newSearch) {
         this.ctx.currentPage = 1;
-        this.prevSearchString = this.searchString;
+        this.prevSearch = _.clone(this.searchFilters);
+        this.prevSearch.searchType = searchType;
       }
 
       console.log(this.prevSearchString)
-
-      const fields = ['title', 'subtitle', 'description', 'text'];
-      let fieldOccurrence = [];
-      fields.forEach(field => {
-        let search = this.prevSearchString.search(new RegExp(`\\b${field}\\b: `, 'g'))
-        if (search !== -1) {
-          console.log(field)
-          let fieldData = {};
-          fieldData.index = search;
-          fieldData.field = field;
-          fieldOccurrence.push(fieldData);
-        }
-      })
-
-      if (fieldOccurrence.length) {
-        fieldOccurrence = _.orderBy(fieldOccurrence, ['index'], ['asc']);
-
-        let tmpSearchStr = this.prevSearchString;
-        for (let i = fieldOccurrence.length - 1; i >= 0; i--) {
-          let query = tmpSearchStr.split(new RegExp(`\\b${fieldOccurrence[i].field}\\b: `, 'g'));
-          fieldOccurrence[i].query = query.slice(-1)[0].trim();
-          tmpSearchStr = tmpSearchStr.substring(0, fieldOccurrence[i].index)
-        }
-      }
-
-      let queryString = [];
-      if (fieldOccurrence.length) {
-        fieldOccurrence.forEach(item => {
-          queryString.push(`${item.field}=${encodeURIComponent(item.query)}`);
-        })
-      } else {
-        queryString.push(`searchQuery=${encodeURIComponent(this.prevSearchString === '' ? "" : this.searchString)}`);
-      }
-
-      let params = {
-        take: this.ctx.perPage,
-        page: this.ctx.currentPage
-      };
-
-      let encodedParams = encodeURIComponent(JSON.stringify(params));
-
-      // console.log(queryString.join('&'))
-      let url = `${app.config.globalProperties.api.baseUrl}search?${queryString.join('&')}&params=${encodedParams}`;
-
-      this.isLoading = true;
-
-      await app.axios.get(url)
-          .then(resp => {
-            this.items = resp.data.data;
-            this.ctx.count = resp.data.totalHits;
-            this.isLoading = false;
-            // console.log(resp)
-          })
-          .catch(err => {
-            console.error(err)
-            this.isLoading = false;
-          })
+      app
+      // const fields = ['title', 'subtitle', 'description', 'text'];
+      // let fieldOccurrence = [];
+      // fields.forEach(field => {
+      //   let search = this.prevSearchString.search(new RegExp(`\\b${field}\\b: `, 'g'))
+      //   if (search !== -1) {
+      //     console.log(field)
+      //     let fieldData = {};
+      //     fieldData.index = search;
+      //     fieldData.field = field;
+      //     fieldOccurrence.push(fieldData);
+      //   }
+      // })
+      //
+      // if (fieldOccurrence.length) {
+      //   fieldOccurrence = _.orderBy(fieldOccurrence, ['index'], ['asc']);
+      //
+      //   let tmpSearchStr = this.prevSearchString;
+      //   for (let i = fieldOccurrence.length - 1; i >= 0; i--) {
+      //     let query = tmpSearchStr.split(new RegExp(`\\b${fieldOccurrence[i].field}\\b: `, 'g'));
+      //     fieldOccurrence[i].query = query.slice(-1)[0].trim();
+      //     tmpSearchStr = tmpSearchStr.substring(0, fieldOccurrence[i].index)
+      //   }
+      // }
+      //
+      // let queryString = [];
+      // if (fieldOccurrence.length) {
+      //   fieldOccurrence.forEach(item => {
+      //     queryString.push(`${item.field}=${encodeURIComponent(item.query)}`);
+      //   })
+      // } else {
+      //   queryString.push(`searchQuery=${encodeURIComponent(this.prevSearchString === '' ? "" : this.searchString)}`);
+      // }
+      //
+      // let params = {
+      //   take: this.ctx.perPage,
+      //   page: this.ctx.currentPage
+      // };
+      //
+      // let encodedParams = encodeURIComponent(JSON.stringify(params));
+      //
+      // // console.log(queryString.join('&'))
+      // let url = `${app.config.globalProperties.api.baseUrl}search?${queryString.join('&')}&params=${encodedParams}`;
+      //
+      // this.isLoading = true;
+      //
+      // await app.axios.get(url)
+      //     .then(resp => {
+      //       this.items = resp.data.data;
+      //       this.ctx.count = resp.data.totalHits;
+      //       this.isLoading = false;
+      //       // console.log(resp)
+      //     })
+      //     .catch(err => {
+      //       console.error(err)
+      //       this.isLoading = false;
+      //     })
     },
 
     formatDate(date) {
@@ -248,6 +275,11 @@ export default {
 
     formatOffsetTime(time) {
       return moment.utc(time * 1000).format('HH:mm:ss');
+    },
+
+    viewCore(id, player) {
+      console.log(id, player);
+      this.players[id] = player;
     },
   }
 }
