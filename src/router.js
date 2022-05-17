@@ -15,7 +15,7 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-    console.log("router", to, from);
+    console.log("router", to);
     next();
 })
 

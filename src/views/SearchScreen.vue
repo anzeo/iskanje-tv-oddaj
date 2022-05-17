@@ -168,19 +168,25 @@ export default {
     return {
       isLoading: false,
       searchFilters: {
-        searchString: "",
-        title: "",
-        description: "",
-        subtitles: ""
+        searchString: this.$route.query.searchString ? decodeURIComponent(this.$route.query.searchString) : "",
+        title: this.$route.query.title ? decodeURIComponent(this.$route.query.title) : "",
+        description: this.$route.query.description ? decodeURIComponent(this.$route.query.description) : "",
+        subtitles: this.$route.query.subtitles ? decodeURIComponent(this.$route.query.subtitles) : "",
       },
-      prevSearch: null,
+      prevSearch: {
+        searchString: this.$route.query.searchString ? decodeURIComponent(this.$route.query.searchString) : "",
+        title: this.$route.query.title ? decodeURIComponent(this.$route.query.title) : "",
+        description: this.$route.query.description ? decodeURIComponent(this.$route.query.description) : "",
+        subtitles: this.$route.query.subtitles ? decodeURIComponent(this.$route.query.subtitles) : "",
+        searchType: this.$route.query.searchType ? this.$route.query.searchType : null,
+      },
       searchString: "",
       prevSearchString: "",
       searchFields: ['title', 'subtitle', 'description', 'text'],
       autocompleteItems: [],
       items: [],
       ctx: {
-        currentPage: 1,
+        currentPage: this.$route.query.page ? parseInt(this.$route.query.page) : 1,
         perPage: 12,
         count: 0
       },
@@ -193,75 +199,58 @@ export default {
   watch: {},
 
   mounted() {
-    // this.search();
+    this.search();
   },
 
   methods: {
     async search(newSearch = false, searchType = null) {
       if (newSearch) {
         this.ctx.currentPage = 1;
-        this.prevSearch = _.clone(this.searchFilters);
+        this.prevSearch = {..._.clone(this.searchFilters)};
         this.prevSearch.searchType = searchType;
       }
+console.log(this.prevSearch)
+      let query = {};
+      let searchParams = [];
 
-      console.log(this.prevSearchString)
-      app
-      // const fields = ['title', 'subtitle', 'description', 'text'];
-      // let fieldOccurrence = [];
-      // fields.forEach(field => {
-      //   let search = this.prevSearchString.search(new RegExp(`\\b${field}\\b: `, 'g'))
-      //   if (search !== -1) {
-      //     console.log(field)
-      //     let fieldData = {};
-      //     fieldData.index = search;
-      //     fieldData.field = field;
-      //     fieldOccurrence.push(fieldData);
-      //   }
-      // })
-      //
-      // if (fieldOccurrence.length) {
-      //   fieldOccurrence = _.orderBy(fieldOccurrence, ['index'], ['asc']);
-      //
-      //   let tmpSearchStr = this.prevSearchString;
-      //   for (let i = fieldOccurrence.length - 1; i >= 0; i--) {
-      //     let query = tmpSearchStr.split(new RegExp(`\\b${fieldOccurrence[i].field}\\b: `, 'g'));
-      //     fieldOccurrence[i].query = query.slice(-1)[0].trim();
-      //     tmpSearchStr = tmpSearchStr.substring(0, fieldOccurrence[i].index)
-      //   }
-      // }
-      //
-      // let queryString = [];
-      // if (fieldOccurrence.length) {
-      //   fieldOccurrence.forEach(item => {
-      //     queryString.push(`${item.field}=${encodeURIComponent(item.query)}`);
-      //   })
-      // } else {
-      //   queryString.push(`searchQuery=${encodeURIComponent(this.prevSearchString === '' ? "" : this.searchString)}`);
-      // }
-      //
-      // let params = {
-      //   take: this.ctx.perPage,
-      //   page: this.ctx.currentPage
-      // };
-      //
-      // let encodedParams = encodeURIComponent(JSON.stringify(params));
-      //
-      // // console.log(queryString.join('&'))
-      // let url = `${app.config.globalProperties.api.baseUrl}search?${queryString.join('&')}&params=${encodedParams}`;
-      //
-      // this.isLoading = true;
-      //
-      // await app.axios.get(url)
-      //     .then(resp => {
-      //       this.items = resp.data.data;
-      //       this.ctx.count = resp.data.totalHits;
-      //       this.isLoading = false;
-      //       // console.log(resp)
-      //     })
-      //     .catch(err => {
-      //       console.error(err)
-      //       this.isLoading = false;
-      //     })
+      query['searchType'] = this.prevSearch.searchType;
+
+      if (this.prevSearch.searchType === 'query') {
+        query['searchString'] = encodeURIComponent(this.prevSearch.searchString)
+        searchParams.push(`searchQuery=${encodeURIComponent(this.prevSearch.searchString)}`);
+      } else {
+        searchParams = Object.keys(this.prevSearch).filter(name => this.prevSearch[name] !== null && name !== 'searchString' && name !== 'searchType').map(name => {
+          query[name] = encodeURIComponent(this.prevSearch[name]);
+          return `${name}=${encodeURIComponent(this.prevSearch[name])}`
+        })
+      }
+
+      let params = {
+        take: this.ctx.perPage,
+        page: this.ctx.currentPage
+      };
+
+      let encodedParams = encodeURI(JSON.stringify(params));
+
+      if (this.ctx.currentPage !== 1)
+        query['page'] = this.ctx.currentPage;
+
+      await this.$router.replace({query: {...query}})
+
+      let url = `${app.config.globalProperties.api.baseUrl}search?${searchParams.join('&')}&params=${encodedParams}`;
+
+      this.isLoading = true;
+
+      await app.axios.get(url)
+          .then(resp => {
+            this.items = resp.data.data;
+            this.ctx.count = resp.data.totalHits;
+            this.isLoading = false;
+          })
+          .catch(err => {
+            console.error(err)
+            this.isLoading = false;
+          })
     },
 
     formatDate(date) {

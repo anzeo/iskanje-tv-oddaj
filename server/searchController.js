@@ -8,7 +8,7 @@ router.get('/search', (req, res) => {
 
     console.log(req.query)
     let query;
-    if (req.query.searchQuery) {    // || req.query.searchQuery === ''
+    if (req.query.searchQuery || req.query.searchQuery === '') {    // || req.query.searchQuery === ''
         query = {
             bool: {
                 should: [
