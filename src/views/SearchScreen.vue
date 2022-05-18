@@ -70,15 +70,16 @@
         <b-col v-else v-for="item in items" :key="'item_' + item._id" class="mb-3" md="4" sm="6">
           <div class="p-2 d-flex flex-column overflow-hidden"
                style="border: 1px solid; border-radius: 8px; max-height: 350px">
+            <p class="fw-bold mb-0">{{ item._source.metadata.showName }}</p>
             <p class="fw-bold mb-0">{{ item._source.metadata.title }}</p>
             <p class="mb-3 small">{{ item._source.metadata.subtitle }}</p>
-            <template v-if="item.inner_hits && item.inner_hits.speech.hits.hits.length">
+            <template v-if="item.inner_hits && item.inner_hits.subtitles.hits.hits.length">
               <small class="fw-bold">Ujemajoči podnapisi: </small>
               <div class="overflow-auto">
-                <div v-for="subtitle in item.inner_hits.speech.hits.hits" :key="'subtitle_' + subtitle._id"
+                <div v-for="subtitle in item.inner_hits.subtitles.hits.hits" :key="'subtitle_' + subtitle._id"
                      class="d-table-row">
                   <small class="d-table-cell pe-2">
-                    {{ formatOffsetTime(subtitle._source.offset) }}
+                    {{ formatOffsetTime(subtitle._source.start) }}
                   </small>
                   <p class="pb-2 d-table-cell">{{ subtitle._source.text }}</p>
                 </div>
@@ -263,7 +264,7 @@ console.log(this.prevSearch)
     },
 
     formatOffsetTime(time) {
-      return moment.utc(time * 1000).format('HH:mm:ss');
+      return moment.utc(time * 1000).format('HH:mm:ss.SS');
     },
 
     viewCore(id, player) {

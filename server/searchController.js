@@ -22,16 +22,16 @@ router.get('/search', (req, res) => {
                             }
                         }
                     },
-                    {
-                        "regexp": {
-                            "metadata.subtitle": {
-                                value: `.*${escapeSpecialChars(req.query.searchQuery)}.*`,
-                                flags: "ALL",
-                                case_insensitive: true,
-                                max_determinized_states: 10000
-                            }
-                        }
-                    },
+                    // {
+                    //     "regexp": {
+                    //         "metadata.subtitle": {
+                    //             value: `.*${escapeSpecialChars(req.query.searchQuery)}.*`,
+                    //             flags: "ALL",
+                    //             case_insensitive: true,
+                    //             max_determinized_states: 10000
+                    //         }
+                    //     }
+                    // },
                     {
                         "regexp": {
                             "metadata.description": {
@@ -44,11 +44,11 @@ router.get('/search', (req, res) => {
                     },
                     {
                         nested: {
-                            path: "speech",
+                            path: "subtitles",
                             inner_hits: {},
                             query: {
                                 "regexp": {
-                                    "speech.text": {
+                                    "subtitles.text": {
                                         value: `.*${escapeSpecialChars(req.query.searchQuery)}.*`,
                                         flags: "ALL",
                                         case_insensitive: true,
@@ -75,16 +75,16 @@ router.get('/search', (req, res) => {
                             }
                         }
                     }] : [],
-                    ...req.query.subtitle ? [{
-                        "regexp": {
-                            "metadata.subtitle": {
-                                value: `.*${escapeSpecialChars(req.query.subtitle)}.*`,
-                                flags: "ALL",
-                                case_insensitive: true,
-                                max_determinized_states: 10000
-                            }
-                        }
-                    }] : [],
+                    // ...req.query.subtitle ? [{
+                    //     "regexp": {
+                    //         "metadata.subtitle": {
+                    //             value: `.*${escapeSpecialChars(req.query.subtitle)}.*`,
+                    //             flags: "ALL",
+                    //             case_insensitive: true,
+                    //             max_determinized_states: 10000
+                    //         }
+                    //     }
+                    // }] : [],
                     ...req.query.description ? [{
                         "regexp": {
                             "metadata.description": {
@@ -95,14 +95,14 @@ router.get('/search', (req, res) => {
                             }
                         }
                     }] : [],
-                    ...req.query.text ? [{
+                    ...req.query.subtitles ? [{
                         nested: {
-                            path: "speech",
+                            path: "subtitles",
                             inner_hits: {},
                             query: {
                                 "regexp": {
-                                    "speech.text": {
-                                        value: `.*${escapeSpecialChars(req.query.text)}.*`,
+                                    "subtitles.text": {
+                                        value: `.*${escapeSpecialChars(req.query.subtitles)}.*`,
                                         flags: "ALL",
                                         case_insensitive: true,
                                         max_determinized_states: 10000
@@ -117,7 +117,7 @@ router.get('/search', (req, res) => {
     }
 
     let body = {
-        index: 'oddaje-nested',     //oddaje-nested | tv-oddaje
+        index: 'rtv-oddaje',     //oddaje-nested | tv-oddaje
         query: query
     }
 
