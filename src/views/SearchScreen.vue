@@ -27,11 +27,15 @@
                             @keyup.enter="search(true, 'query')"
                             style="border-left: 0; padding-left: 6px"></b-form-input>
             </b-input-group>
-            <div class="position-relative" style="max-width: 600px; margin-right: 43px">
+            <div class="position-relative" style="max-width: 600px; margin-right: 43px; z-index: 5">
               <b-collapse id="filters" class="position-absolute w-100" @hidden="filtersVisible = false"
                           @show="filtersVisible = true">
                 <b-card id="filtersCard"
                         style="border-top: 0; border-radius: 0 0 0.25rem 0.25rem; border-color: rgb(206, 212, 218)">
+                  <b-form-group label="Ime oddaje" label-for="showName" label-class="py-0" label-cols-md="2"
+                                label-size="sm">
+                    <b-form-input id="showName" v-model="searchFilters.showName"></b-form-input>
+                  </b-form-group>
                   <b-form-group label="Naslov" label-for="title" label-class="py-0" label-cols-md="2" label-size="sm">
                     <b-form-input id="title" v-model="searchFilters.title"></b-form-input>
                   </b-form-group>
@@ -56,77 +60,111 @@
       </b-col>
     </b-row>
     <div class="container-fluid">
-      <!--      <vue3-video-player :core="HLSCore"-->
-      <!--                         :view-core="viewCore.bind(null, 'video1')"-->
-      <!--                         :src="'https://vodstr.rtvslo.si/encrypted11/_definst_/2022/05/16/Poroila_ob_10h2022-05-16-100604-SLO1_1.mp4/playlist.m3u8?keylockhash=WZfRyRDTeNyrQF5wpD3uYUziG9KLy-aVfbBtKt8ILE0'"></vue3-video-player>-->
-      <b-row class="mt-3">
-        <b-col md="12" class="mb-4 d-flex align-items-center">
-          <h4 class="mb-0">Rezultati iskanja</h4>
-          <small class="ms-3" v-if="ctx.count">({{ ctx.count }} rezultatov)</small>
-        </b-col>
-        <b-col v-if="!ctx.count">
-          <p>Ni rezultatov za prikaz...</p>
-        </b-col>
-        <b-col v-else v-for="item in items" :key="'item_' + item._id" class="mb-3" md="4" sm="6">
-          <div class="p-2 d-flex flex-column overflow-hidden"
-               style="border: 1px solid; border-radius: 8px; max-height: 350px">
-            <p class="fw-bold mb-0">{{ item._source.metadata.showName }}</p>
-            <p class="fw-bold mb-0">{{ item._source.metadata.title }}</p>
-            <p class="mb-3 small">{{ item._source.metadata.subtitle }}</p>
-            <template v-if="item.inner_hits && item.inner_hits.subtitles.hits.hits.length">
-              <small class="fw-bold">Ujemajoči podnapisi: </small>
-              <div class="overflow-auto">
-                <div v-for="subtitle in item.inner_hits.subtitles.hits.hits" :key="'subtitle_' + subtitle._id"
-                     class="d-table-row">
-                  <small class="d-table-cell pe-2">
-                    {{ formatOffsetTime(subtitle._source.start) }}
+<!--      <vue3-video-player :core="HLSCore"-->
+<!--                         :view-core="viewCore.bind(null, 'video1')"-->
+<!--                         :src="'https://vodstr.rtvslo.si/encrypted11/_definst_/2022/05/21/Vreme_ob_19h2022-05-21-081735-SLO1.mp4/playlist.m3u8?keylockhash=qx983wrolM7oMcsVzhUv9f3VlJXY944mmIWr72Fpwus'">-->
+<!--        <template #cusControls>-->
+<!--          <span class="btn-play" @click="play('video1')">-->
+<!--            <svg-->
+<!--                xmlns="http://www.w3.org/2000/svg"-->
+<!--                width="41"-->
+<!--                height="47"-->
+<!--                viewBox="0 0 41 47"-->
+<!--            >-->
+<!--              <path-->
+<!--                  d="M23.5,0,47,41H0Z"-->
+<!--                  transform="translate(41) rotate(90)"-->
+<!--                  fill="#fff"-->
+<!--              />-->
+<!--            </svg>-->
+<!--          </span>-->
+<!--        </template>-->
+<!--      </vue3-video-player>-->
+            <b-row class="mt-3">
+              <b-col md="12" class="mb-4 d-flex align-items-center">
+                <h4 class="mb-0">Rezultati iskanja</h4>
+                <small class="ms-3" v-if="ctx.count">({{ ctx.count }} rezultatov)</small>
+              </b-col>
+              <b-col v-if="!ctx.count">
+                <p>Ni rezultatov za prikaz...</p>
+              </b-col>
+              <b-col v-else v-for="item in items" :key="'item_' + item._id" class="mb-3" md="3" sm="4">
+                <div>
+                  <div class="imageContainer position-relative">
+                    <div class="playIcon">
+                      <vue-feather type="play-circle" size="28"></vue-feather>
+                    </div>
+                    <img :src="item._source.metadata.thumbnail" style="position: relative; width: 100%; height: auto; z-index: -1" @error="neki"/>
+                    <div class="showDuration">
+                      <vue-feather type="clock" size="13"></vue-feather>
+                      <small>&nbsp;{{ formatLength(item._source.metadata.duration) }}</small>
+                    </div>
+                  </div>
+                  <small>
+
+                    <p class="fw-bold mb-0">{{ item._source.metadata.showName }}</p>
+                    <p class="fw-light fst-italic mb-0">{{ item._source.metadata.title }}</p>
                   </small>
-                  <p class="pb-2 d-table-cell">{{ subtitle._source.text }}</p>
                 </div>
-              </div>
-            </template>
-            <template v-else>
-              <small class="fw-bold">Čas trajanja: </small>
-              <p class="mb-2"> {{ formatLength(item._source.metadata.duration) }}</p>
-              <small class="fw-bold">Datum predvajanja: </small>
-              <p class="mb-2">{{ formatDate(item._source.metadata.playDate) }}</p>
-              <small class="fw-bold">Opis: </small>
-              <p class="overflow-auto">{{ item._source.metadata.description }}</p>
-            </template>
-          </div>
-        </b-col>
+                <!--          <div class="p-2 d-flex flex-column overflow-hidden"-->
+                <!--               style="border: 1px solid; border-radius: 8px; max-height: 350px">-->
+                <!--            <p class="fw-bold mb-0">{{ item._source.metadata.showName }}</p>-->
+                <!--            <p class="fw-light fst-italic mb-0">{{ item._source.metadata.title }}</p>-->
+                <!--            <p class="mb-3 small">{{ item._source.metadata.subtitle }}</p>-->
+                <!--            <template v-if="item.inner_hits && item.inner_hits.subtitles.hits.hits.length">-->
+                <!--              <small class="fw-bold">Ujemajoči podnapisi: </small>-->
+                <!--              <div class="overflow-auto">-->
+                <!--                <div v-for="subtitle in item.inner_hits.subtitles.hits.hits" :key="'subtitle_' + subtitle._id"-->
+                <!--                     class="d-table-row">-->
+                <!--                  <small class="d-table-cell pe-2">-->
+                <!--                    {{ formatOffsetTime(subtitle._source.start) }}-->
+                <!--                  </small>-->
+                <!--                  <p class="pb-2 d-table-cell">{{ subtitle._source.text }}</p>-->
+                <!--                </div>-->
+                <!--              </div>-->
+                <!--            </template>-->
+                <!--            <template v-else>-->
+                <!--              <small class="fw-bold">Čas trajanja: </small>-->
+                <!--              <p class="mb-2"> {{ formatLength(item._source.metadata.duration) }}</p>-->
+                <!--              <small class="fw-bold">Datum predvajanja: </small>-->
+                <!--              <p class="mb-2">{{ formatDate(item._source.metadata.playDate) }}</p>-->
+                <!--              <small class="fw-bold">Opis: </small>-->
+                <!--              <p class="overflow-auto">{{ item._source.metadata.description }}</p>-->
+                <!--            </template>-->
+                <!--          </div>-->
+              </b-col>
 
-        <b-pagination
-            v-if="ctx.count !== 0"
-            v-model="ctx.currentPage"
-            :total-rows="ctx.count"
-            :per-page="ctx.perPage"
-            class="my-4"
-            align="center"
-            @update:modelValue="search(false)">
-        </b-pagination>
-        <!--      <template v-else>-->
-        <!--        <b-col v-if="!items.length">-->
-        <!--          <p>Ni rezultatov za prikaz...</p>-->
-        <!--        </b-col>-->
-        <!--        <b-col v-else v-for="item in items" :key="'item_' + item._id" class="mb-3" md="4" sm="6">-->
-        <!--          <div class="p-2" style="border: 1px solid; border-radius: 8px">-->
-        <!--            <p class="fw-bold">{{ item._source.metadata.title }}</p>-->
-        <!--            <small class="fw-bold">Podnapisi: </small>-->
-        <!--            <div style="max-height: 150px; overflow-y: auto">-->
-        <!--              <div v-for="(subtitle, index) in item._source.subtitles" :key="'subtitle_' + index"-->
-        <!--                   class="d-table-row">-->
-        <!--                <small class="d-table-cell pe-2">-->
-        <!--                  {{ formatOffsetTime(subtitle.offset) }}-->
-        <!--                </small>-->
-        <!--                <p class="pb-2 d-table-cell">{{ subtitle.text }}</p>-->
-        <!--              </div>-->
-        <!--            </div>-->
-        <!--          </div>-->
-        <!--        </b-col>-->
-        <!--      </template>-->
+              <b-pagination
+                  v-if="ctx.count !== 0"
+                  v-model="ctx.currentPage"
+                  :total-rows="ctx.count"
+                  :per-page="ctx.perPage"
+                  class="my-4"
+                  align="center"
+                  @update:modelValue="search(false)">
+              </b-pagination>
+              <!--      <template v-else>-->
+              <!--        <b-col v-if="!items.length">-->
+              <!--          <p>Ni rezultatov za prikaz...</p>-->
+              <!--        </b-col>-->
+              <!--        <b-col v-else v-for="item in items" :key="'item_' + item._id" class="mb-3" md="4" sm="6">-->
+              <!--          <div class="p-2" style="border: 1px solid; border-radius: 8px">-->
+              <!--            <p class="fw-bold">{{ item._source.metadata.title }}</p>-->
+              <!--            <small class="fw-bold">Podnapisi: </small>-->
+              <!--            <div style="max-height: 150px; overflow-y: auto">-->
+              <!--              <div v-for="(subtitle, index) in item._source.subtitles" :key="'subtitle_' + index"-->
+              <!--                   class="d-table-row">-->
+              <!--                <small class="d-table-cell pe-2">-->
+              <!--                  {{ formatOffsetTime(subtitle.offset) }}-->
+              <!--                </small>-->
+              <!--                <p class="pb-2 d-table-cell">{{ subtitle.text }}</p>-->
+              <!--              </div>-->
+              <!--            </div>-->
+              <!--          </div>-->
+              <!--        </b-col>-->
+              <!--      </template>-->
 
-      </b-row>
+            </b-row>
 
       <b-modal id="searchInstructionsModal" title="Navodila za iskanje" ok-only>
         <div>
@@ -157,6 +195,7 @@ import _ from 'lodash';
 import Loading from 'vue3-loading-overlay';
 import 'vue3-loading-overlay/dist/vue3-loading-overlay.css';
 import HLSCore from '@cloudgeek/playcore-hls';
+import '@cloudgeek/vue3-video-player/dist/vue3-video-player.css';
 
 export default {
   name: "SearchScreen",
@@ -170,20 +209,22 @@ export default {
       isLoading: false,
       searchFilters: {
         searchString: this.$route.query.searchString ? decodeURIComponent(this.$route.query.searchString) : "",
+        showName: this.$route.query.showName ? decodeURIComponent(this.$route.query.showName) : "",
         title: this.$route.query.title ? decodeURIComponent(this.$route.query.title) : "",
         description: this.$route.query.description ? decodeURIComponent(this.$route.query.description) : "",
         subtitles: this.$route.query.subtitles ? decodeURIComponent(this.$route.query.subtitles) : "",
       },
       prevSearch: {
-        searchString: this.$route.query.searchString ? decodeURIComponent(this.$route.query.searchString) : "",
-        title: this.$route.query.title ? decodeURIComponent(this.$route.query.title) : "",
-        description: this.$route.query.description ? decodeURIComponent(this.$route.query.description) : "",
-        subtitles: this.$route.query.subtitles ? decodeURIComponent(this.$route.query.subtitles) : "",
-        searchType: this.$route.query.searchType ? this.$route.query.searchType : null,
+        // searchString: this.$route.query.searchString ? decodeURIComponent(this.$route.query.searchString) : "",
+        // showName: this.$route.query.showName ? decodeURIComponent(this.$route.query.showName) : "",
+        // title: this.$route.query.title ? decodeURIComponent(this.$route.query.title) : "",
+        // description: this.$route.query.description ? decodeURIComponent(this.$route.query.description) : "",
+        // subtitles: this.$route.query.subtitles ? decodeURIComponent(this.$route.query.subtitles) : "",
+        // searchType: this.$route.query.searchType ? this.$route.query.searchType : null,
       },
       searchString: "",
       prevSearchString: "",
-      searchFields: ['title', 'subtitle', 'description', 'text'],
+      searchFields: ['showName', 'title', 'subtitle', 'description', 'text'],
       autocompleteItems: [],
       items: [],
       ctx: {
@@ -206,11 +247,12 @@ export default {
   methods: {
     async search(newSearch = false, searchType = null) {
       if (newSearch) {
+        console.log("here")
         this.ctx.currentPage = 1;
         this.prevSearch = {..._.clone(this.searchFilters)};
         this.prevSearch.searchType = searchType;
       }
-console.log(this.prevSearch)
+      console.log(this.prevSearch)
       let query = {};
       let searchParams = [];
 
@@ -259,7 +301,7 @@ console.log(this.prevSearch)
     },
 
     formatLength(time) {
-      let format = time >= 3600 ? 'HH [h] mm [min] ss [s]' : 'mm [min] ss [s]'
+      let format = time >= 3600 ? 'HH:mm:ss' : 'mm:ss'
       return moment.utc(time * 1000).format(format);
     },
 
@@ -271,6 +313,11 @@ console.log(this.prevSearch)
       console.log(id, player);
       this.players[id] = player;
     },
+
+    neki(e) {
+      e.target.src = "https://www.dia.org/sites/default/files/No_Img_Avail.jpg"
+      console.log(e)
+    }
   }
 }
 </script>
@@ -288,5 +335,27 @@ console.log(this.prevSearch)
   background: white;
   border: 1px solid rgb(206, 212, 218);
   cursor: pointer;
+}
+
+/*.test-player-wrap {*/
+/*  width: 720px;*/
+/*  height: 405px;*/
+/*  position: relative;*/
+/*  margin: 20px auto;*/
+/*}*/
+.btn-play {
+  color: white;
+  margin-right: 10px;
+  margin-left: 15px !important;
+  cursor: pointer;
+}
+
+.btn-play svg {
+  width: 16px;
+}
+
+.vcp-dashboard {
+  width: 100%;
+  margin-left: 0;
 }
 </style>

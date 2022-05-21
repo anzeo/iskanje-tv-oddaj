@@ -45,3 +45,54 @@ body {
     box-shadow: 0 3px 2px -0.1rem rgba(13, 110, 253, .25);
   }
 }
+
+.imageContainer {
+  background: linear-gradient(to bottom, rgba(0,0,0,0) 60%,  rgba(0,0,0,0.1) 70%, rgba(0,0,0,0.2) 80%, rgba(0, 0, 0, 0.45) 100%);
+
+  .playIcon {
+    position: absolute;
+    display: flex;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    visibility: hidden;
+    color: white;
+    transition:visibility 0.7s, opacity 0.7s;
+    opacity:0
+  }
+}
+
+.imageContainer:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  transition: 0.7s;
+  opacity: 0;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.2) 60%, rgba(0, 0, 0, 0.45) 100%);
+}
+
+.imageContainer:hover {
+  cursor: pointer;
+  .playIcon {
+    visibility: visible;
+    opacity: 1;
+  }
+}
+
+.imageContainer:hover:before {
+  opacity: 1;
+}
+
+.showDuration {
+  position: absolute;
+  bottom: 0.1rem;
+  left: 0.3rem;
+  display: flex;
+  align-items: center;
+  color: white;
+  font-weight: bold;
+}

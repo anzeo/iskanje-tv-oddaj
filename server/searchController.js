@@ -14,6 +14,16 @@ router.get('/search', (req, res) => {
                 should: [
                     {
                         "regexp": {
+                            "metadata.showName": {
+                                value: `.*${escapeSpecialChars(req.query.searchQuery)}.*`,
+                                flags: "ALL",
+                                case_insensitive: true,
+                                max_determinized_states: 10000
+                            }
+                        }
+                    },
+                    {
+                        "regexp": {
                             "metadata.title": {
                                 value: `.*${escapeSpecialChars(req.query.searchQuery)}.*`,
                                 flags: "ALL",
@@ -65,6 +75,16 @@ router.get('/search', (req, res) => {
         query = {
             bool: {
                 must: [
+                    ...req.query.showName ? [{
+                        "regexp": {
+                            "metadata.showName": {
+                                value: `.*${escapeSpecialChars(req.query.showName)}.*`,
+                                flags: "ALL",
+                                case_insensitive: true,
+                                max_determinized_states: 10000
+                            }
+                        }
+                    }] : [],
                     ...req.query.title ? [{
                         "regexp": {
                             "metadata.title": {
