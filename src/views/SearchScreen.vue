@@ -60,111 +60,92 @@
       </b-col>
     </b-row>
     <div class="container-fluid">
-<!--      <vue3-video-player :core="HLSCore"-->
-<!--                         :view-core="viewCore.bind(null, 'video1')"-->
-<!--                         :src="'https://vodstr.rtvslo.si/encrypted11/_definst_/2022/05/21/Vreme_ob_19h2022-05-21-081735-SLO1.mp4/playlist.m3u8?keylockhash=qx983wrolM7oMcsVzhUv9f3VlJXY944mmIWr72Fpwus'">-->
-<!--        <template #cusControls>-->
-<!--          <span class="btn-play" @click="play('video1')">-->
-<!--            <svg-->
-<!--                xmlns="http://www.w3.org/2000/svg"-->
-<!--                width="41"-->
-<!--                height="47"-->
-<!--                viewBox="0 0 41 47"-->
-<!--            >-->
-<!--              <path-->
-<!--                  d="M23.5,0,47,41H0Z"-->
-<!--                  transform="translate(41) rotate(90)"-->
-<!--                  fill="#fff"-->
-<!--              />-->
-<!--            </svg>-->
-<!--          </span>-->
-<!--        </template>-->
-<!--      </vue3-video-player>-->
-            <b-row class="mt-3">
-              <b-col md="12" class="mb-4 d-flex align-items-center">
-                <h4 class="mb-0">Rezultati iskanja</h4>
-                <small class="ms-3" v-if="ctx.count">({{ ctx.count }} rezultatov)</small>
-              </b-col>
-              <b-col v-if="!ctx.count">
-                <p>Ni rezultatov za prikaz...</p>
-              </b-col>
-              <b-col v-else v-for="item in items" :key="'item_' + item._id" class="mb-3" md="3" sm="4">
-                <div>
-                  <div class="imageContainer position-relative">
-                    <div class="playIcon">
-                      <vue-feather type="play-circle" size="28"></vue-feather>
-                    </div>
-                    <img :src="item._source.metadata.thumbnail" style="position: relative; width: 100%; height: auto; z-index: -1" @error="neki"/>
-                    <div class="showDuration">
-                      <vue-feather type="clock" size="13"></vue-feather>
-                      <small>&nbsp;{{ formatLength(item._source.metadata.duration) }}</small>
-                    </div>
-                  </div>
-                  <small>
+      <b-row class="mt-3">
+        <b-col md="12" class="mb-4 d-flex align-items-center">
+          <h4 class="mb-0">Rezultati iskanja</h4>
+          <small class="ms-3" v-if="ctx.count">({{ ctx.count }} rezultatov)</small>
+        </b-col>
+        <b-col v-if="!ctx.count">
+          <p>Ni rezultatov za prikaz...</p>
+        </b-col>
+        <b-col v-else v-for="item in items" :key="'item_' + item._id" class="mb-3" md="3" sm="4">
+          <div>
+            <div class="imageContainer position-relative" :key="'image_' + item._id" @click.prevent="showVideo(item)">
+              <div class="playIcon">
+                <vue-feather type="play-circle" size="28"></vue-feather>
+              </div>
+              <img :src="item._source.metadata.thumbnail"
+                   style="position: relative; width: 100%; height: auto; z-index: -1"/>
+              <div class="showDuration">
+                <vue-feather type="clock" size="13"></vue-feather>
+                <small>&nbsp;{{ formatLength(item._source.metadata.duration) }}</small>
+              </div>
+            </div>
+            <small>
 
-                    <p class="fw-bold mb-0">{{ item._source.metadata.showName }}</p>
-                    <p class="fw-light fst-italic mb-0">{{ item._source.metadata.title }}</p>
-                  </small>
-                </div>
-                <!--          <div class="p-2 d-flex flex-column overflow-hidden"-->
-                <!--               style="border: 1px solid; border-radius: 8px; max-height: 350px">-->
-                <!--            <p class="fw-bold mb-0">{{ item._source.metadata.showName }}</p>-->
-                <!--            <p class="fw-light fst-italic mb-0">{{ item._source.metadata.title }}</p>-->
-                <!--            <p class="mb-3 small">{{ item._source.metadata.subtitle }}</p>-->
-                <!--            <template v-if="item.inner_hits && item.inner_hits.subtitles.hits.hits.length">-->
-                <!--              <small class="fw-bold">Ujemajoči podnapisi: </small>-->
-                <!--              <div class="overflow-auto">-->
-                <!--                <div v-for="subtitle in item.inner_hits.subtitles.hits.hits" :key="'subtitle_' + subtitle._id"-->
-                <!--                     class="d-table-row">-->
-                <!--                  <small class="d-table-cell pe-2">-->
-                <!--                    {{ formatOffsetTime(subtitle._source.start) }}-->
-                <!--                  </small>-->
-                <!--                  <p class="pb-2 d-table-cell">{{ subtitle._source.text }}</p>-->
-                <!--                </div>-->
-                <!--              </div>-->
-                <!--            </template>-->
-                <!--            <template v-else>-->
-                <!--              <small class="fw-bold">Čas trajanja: </small>-->
-                <!--              <p class="mb-2"> {{ formatLength(item._source.metadata.duration) }}</p>-->
-                <!--              <small class="fw-bold">Datum predvajanja: </small>-->
-                <!--              <p class="mb-2">{{ formatDate(item._source.metadata.playDate) }}</p>-->
-                <!--              <small class="fw-bold">Opis: </small>-->
-                <!--              <p class="overflow-auto">{{ item._source.metadata.description }}</p>-->
-                <!--            </template>-->
-                <!--          </div>-->
-              </b-col>
+              <p class="fw-bold mb-0">{{ item._source.metadata.showName }}</p>
+              <p class="fw-light fst-italic mb-0">{{ item._source.metadata.title }}</p>
+            </small>
+          </div>
+          <!--          <div class="p-2 d-flex flex-column overflow-hidden"-->
+          <!--               style="border: 1px solid; border-radius: 8px; max-height: 350px">-->
+          <!--            <p class="fw-bold mb-0">{{ item._source.metadata.showName }}</p>-->
+          <!--            <p class="fw-light fst-italic mb-0">{{ item._source.metadata.title }}</p>-->
+          <!--            <p class="mb-3 small">{{ item._source.metadata.subtitle }}</p>-->
+          <!--            <template v-if="item.inner_hits && item.inner_hits.subtitles.hits.hits.length">-->
+          <!--              <small class="fw-bold">Ujemajoči podnapisi: </small>-->
+          <!--              <div class="overflow-auto">-->
+          <!--                <div v-for="subtitle in item.inner_hits.subtitles.hits.hits" :key="'subtitle_' + subtitle._id"-->
+          <!--                     class="d-table-row">-->
+          <!--                  <small class="d-table-cell pe-2">-->
+          <!--                    {{ formatOffsetTime(subtitle._source.start) }}-->
+          <!--                  </small>-->
+          <!--                  <p class="pb-2 d-table-cell">{{ subtitle._source.text }}</p>-->
+          <!--                </div>-->
+          <!--              </div>-->
+          <!--            </template>-->
+          <!--            <template v-else>-->
+          <!--              <small class="fw-bold">Čas trajanja: </small>-->
+          <!--              <p class="mb-2"> {{ formatLength(item._source.metadata.duration) }}</p>-->
+          <!--              <small class="fw-bold">Datum predvajanja: </small>-->
+          <!--              <p class="mb-2">{{ formatDate(item._source.metadata.playDate) }}</p>-->
+          <!--              <small class="fw-bold">Opis: </small>-->
+          <!--              <p class="overflow-auto">{{ item._source.metadata.description }}</p>-->
+          <!--            </template>-->
+          <!--          </div>-->
+        </b-col>
 
-              <b-pagination
-                  v-if="ctx.count !== 0"
-                  v-model="ctx.currentPage"
-                  :total-rows="ctx.count"
-                  :per-page="ctx.perPage"
-                  class="my-4"
-                  align="center"
-                  @update:modelValue="search(false)">
-              </b-pagination>
-              <!--      <template v-else>-->
-              <!--        <b-col v-if="!items.length">-->
-              <!--          <p>Ni rezultatov za prikaz...</p>-->
-              <!--        </b-col>-->
-              <!--        <b-col v-else v-for="item in items" :key="'item_' + item._id" class="mb-3" md="4" sm="6">-->
-              <!--          <div class="p-2" style="border: 1px solid; border-radius: 8px">-->
-              <!--            <p class="fw-bold">{{ item._source.metadata.title }}</p>-->
-              <!--            <small class="fw-bold">Podnapisi: </small>-->
-              <!--            <div style="max-height: 150px; overflow-y: auto">-->
-              <!--              <div v-for="(subtitle, index) in item._source.subtitles" :key="'subtitle_' + index"-->
-              <!--                   class="d-table-row">-->
-              <!--                <small class="d-table-cell pe-2">-->
-              <!--                  {{ formatOffsetTime(subtitle.offset) }}-->
-              <!--                </small>-->
-              <!--                <p class="pb-2 d-table-cell">{{ subtitle.text }}</p>-->
-              <!--              </div>-->
-              <!--            </div>-->
-              <!--          </div>-->
-              <!--        </b-col>-->
-              <!--      </template>-->
+        <b-pagination
+            v-if="ctx.count !== 0"
+            v-model="ctx.currentPage"
+            :total-rows="ctx.count"
+            :per-page="ctx.perPage"
+            class="my-4"
+            align="center"
+            @update:modelValue="search(false)">
+        </b-pagination>
+        <!--      <template v-else>-->
+        <!--        <b-col v-if="!items.length">-->
+        <!--          <p>Ni rezultatov za prikaz...</p>-->
+        <!--        </b-col>-->
+        <!--        <b-col v-else v-for="item in items" :key="'item_' + item._id" class="mb-3" md="4" sm="6">-->
+        <!--          <div class="p-2" style="border: 1px solid; border-radius: 8px">-->
+        <!--            <p class="fw-bold">{{ item._source.metadata.title }}</p>-->
+        <!--            <small class="fw-bold">Podnapisi: </small>-->
+        <!--            <div style="max-height: 150px; overflow-y: auto">-->
+        <!--              <div v-for="(subtitle, index) in item._source.subtitles" :key="'subtitle_' + index"-->
+        <!--                   class="d-table-row">-->
+        <!--                <small class="d-table-cell pe-2">-->
+        <!--                  {{ formatOffsetTime(subtitle.offset) }}-->
+        <!--                </small>-->
+        <!--                <p class="pb-2 d-table-cell">{{ subtitle.text }}</p>-->
+        <!--              </div>-->
+        <!--            </div>-->
+        <!--          </div>-->
+        <!--        </b-col>-->
+        <!--      </template>-->
 
-            </b-row>
+      </b-row>
 
       <b-modal id="searchInstructionsModal" title="Navodila za iskanje" ok-only>
         <div>
@@ -182,6 +163,19 @@
           <p class="mb-0 mt-3 fw-bold">Iskanje po željenih poljih (relacija IN)</p>
           <small><b>Primer vnosa: </b><em>imePolja1: iskalni niz imePolja2: iskalni niz</em></small>
         </div>
+      </b-modal>
+
+      <b-modal id="videoModal" @hide="closeVideo('video1')">
+        <template v-if="selectedShow">
+          <vue3-video-player
+              :core="HLSCore"
+              :src="selectedShow.metadata.video ? (selectedShow.metadata.video['hls_sec'] || selectedShow.metadata.video['hls'] || selectedShow.metadata.video[0]) : null"
+              title="Posnetek"
+              :view-core="viewCore.bind(null, 'video1')"
+          >
+<!--              :src="'https://vodstr.rtvslo.si/encrypted06/_definst_/2020/11/22/174734208.smil/playlist.m3u8?keylockhash=74M1JrDXebt7G1YAHQ-fU3mRi2ntqB7Vp4kJKYT0sD8'"-->
+          </vue3-video-player>
+        </template>
       </b-modal>
     </div>
   </div>
@@ -234,7 +228,8 @@ export default {
       },
       filtersVisible: false,
       HLSCore,
-      players: {}
+      players: {},
+      selectedShow: null
     }
   },
 
@@ -314,9 +309,14 @@ export default {
       this.players[id] = player;
     },
 
-    neki(e) {
-      e.target.src = "https://www.dia.org/sites/default/files/No_Img_Avail.jpg"
-      console.log(e)
+    showVideo(item) {
+      this.selectedShow = item._source;
+      this.$bvModal.show('videoModal');
+    },
+
+    closeVideo(id) {
+      this.selectedShow = null;
+      this.players[id].destroy();
     }
   }
 }
