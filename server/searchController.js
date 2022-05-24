@@ -61,7 +61,9 @@ router.get('/search', (req, res) => {
                         {
                             nested: {
                                 path: "subtitles",
-                                inner_hits: {},
+                                // inner_hits: {
+                                //     _source: false
+                                // },
                                 query: {
                                     "regexp": {
                                         "subtitles.text": {
@@ -125,7 +127,9 @@ router.get('/search', (req, res) => {
                     ...req.query.subtitles ? [{
                         nested: {
                             path: "subtitles",
-                            inner_hits: {},
+                            inner_hits: {
+                                _source: false
+                            },
                             query: {
                                 "regexp": {
                                     "subtitles.text": {
@@ -146,6 +150,11 @@ router.get('/search', (req, res) => {
     let body = {
         index: 'rtv-oddaje',     //oddaje-nested | tv-oddaje
         query: query,
+        // highlight: {
+        //     fields: {
+        //         "subtitles.text": {}
+        //     }
+        // },
         _source: ["metadata"]
     }
 

@@ -41,3 +41,4 @@ app.use('/api', router);
 export {app, client, router}
 
 import('./searchController.js');
+import('./dataController.js');

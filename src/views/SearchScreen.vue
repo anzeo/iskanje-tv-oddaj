@@ -173,7 +173,7 @@
               title="Posnetek"
               :view-core="viewCore.bind(null, 'video1')"
           >
-<!--              :src="'https://vodstr.rtvslo.si/encrypted06/_definst_/2020/11/22/174734208.smil/playlist.m3u8?keylockhash=74M1JrDXebt7G1YAHQ-fU3mRi2ntqB7Vp4kJKYT0sD8'"-->
+<!--              :src="'https://vodstr.rtvslo.si/encrypted11/_definst_/2022/05/22/174874637.smil/playlist.m3u8?keylockhash=Tj6b3p-cXIBYm72YE9qk43OqETyVnFwHMvLhCPm1wfg'"-->
           </vue3-video-player>
         </template>
       </b-modal>
