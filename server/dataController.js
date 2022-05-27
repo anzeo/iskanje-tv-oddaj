@@ -5,7 +5,7 @@ const client_id = '82013fb3a531d5414f478747c1aca622'
 
 router.get("/media/video/:id", (req, res) => {
     if (!req.params)
-        return res.status(400).send("Missing parameters")
+        return res.status(400).send("Missing parameters object")
     if (!req.params.id)
         return res.status(400).send("Missing parameter id")
     console.log(req.params.id)

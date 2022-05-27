@@ -168,12 +168,13 @@
       <b-modal id="videoModal" @hide="closeVideo('video1')">
         <template v-if="selectedShow">
           <vue3-video-player
+              ref="videoPlayer"
+              v-if="selectedShow.streams && Object.entries(selectedShow.streams).length"
               :core="HLSCore"
-              :src="selectedShow.metadata.video ? (selectedShow.metadata.video['hls_sec'] || selectedShow.metadata.video['hls'] || selectedShow.metadata.video[0]) : null"
-              title="Posnetek"
+              :title="selectedShow.metadata.showName"
               :view-core="viewCore.bind(null, 'video1')"
+              :src="selectedShow.streams && Object.entries(selectedShow.streams).length ? (selectedShow.streams['hls_sec'] || selectedShow.streams['hls'] || selectedShow.streams[Object.keys(selectedShow.streams)[0]]) : ''"
           >
-<!--              :src="'https://vodstr.rtvslo.si/encrypted11/_definst_/2022/05/22/174874637.smil/playlist.m3u8?keylockhash=Tj6b3p-cXIBYm72YE9qk43OqETyVnFwHMvLhCPm1wfg'"-->
           </vue3-video-player>
         </template>
       </b-modal>
@@ -309,14 +310,39 @@ export default {
       this.players[id] = player;
     },
 
-    showVideo(item) {
-      this.selectedShow = item._source;
-      this.$bvModal.show('videoModal');
+    async showVideo(item) {
+      try {
+        this.selectedShow = item._source;
+        let streams = {}
+        this.$bvModal.show('videoModal');
+
+        // get video streams
+        let url = `${app.config.globalProperties.api.baseUrl}media/video/${item._source.metadata.id}`
+        let resp = await app.axios.get(url)
+        let obj = resp.data.response;
+
+        if (obj) {
+          if (obj['addaptiveMedia'])
+            for (const [key, value] of Object.entries(obj['addaptiveMedia'])) {
+              streams[key] = value
+            }
+          else if (obj['mediaFiles'] && obj['mediaFiles'].length)
+            streams = obj['mediaFiles'].reduce((max, item) => max.bitrate > item.bitrate ? max : item).streams
+          else if (obj['mediaFiles_sl'] && obj['mediaFiles_sl'].length)
+            streams = obj['mediaFiles_sl'].reduce((max, item) => max.bitrate > item.bitrate ? max : item).streams
+
+          this.selectedShow.streams = streams
+        }
+        else
+          this.selectedShow.streams = {}
+      } catch (e) {
+        console.error(e)
+      }
     },
 
     closeVideo(id) {
+      this.players && this.players[id] && this.players[id].destroy();
       this.selectedShow = null;
-      this.players[id].destroy();
     }
   }
 }
