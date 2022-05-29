@@ -8,7 +8,6 @@ router.get("/media/video/:id", (req, res) => {
         return res.status(400).send("Missing parameters object")
     if (!req.params.id)
         return res.status(400).send("Missing parameter id")
-    console.log(req.params.id)
 
     axios.get('https://api.rtvslo.si/ava/getRecordingDrm/' + req.params.id, {params: {'client_id': client_id}})
         .then(resp => {

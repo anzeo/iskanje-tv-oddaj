@@ -169,6 +169,7 @@
         <template v-if="selectedShow">
           <vue3-video-player
               ref="videoPlayer"
+              :key="'player_' + Date.now()"
               v-if="selectedShow.streams && Object.entries(selectedShow.streams).length"
               :core="HLSCore"
               :title="selectedShow.metadata.showName"
