@@ -13,8 +13,7 @@ router.get('/search', (req, res) => {
             query = {
                 match_all: {}
             }
-        }
-        else {
+        } else {
             query = {
                 bool: {
                     should: [
@@ -38,16 +37,6 @@ router.get('/search', (req, res) => {
                                 }
                             }
                         },
-                        // {
-                        //     "regexp": {
-                        //         "metadata.subtitle": {
-                        //             value: `.*${escapeSpecialChars(req.query.searchQuery)}.*`,
-                        //             flags: "ALL",
-                        //             case_insensitive: true,
-                        //             max_determinized_states: 10000
-                        //         }
-                        //     }
-                        // },
                         {
                             "regexp": {
                                 "metadata.description": {
@@ -61,9 +50,10 @@ router.get('/search', (req, res) => {
                         {
                             nested: {
                                 path: "subtitles",
-                                // inner_hits: {
-                                //     _source: false
-                                // },
+                                inner_hits: {
+                                    size: 0,
+                                    _source: false
+                                },
                                 query: {
                                     "regexp": {
                                         "subtitles.text": {
@@ -104,16 +94,6 @@ router.get('/search', (req, res) => {
                             }
                         }
                     }] : [],
-                    // ...req.query.subtitle ? [{
-                    //     "regexp": {
-                    //         "metadata.subtitle": {
-                    //             value: `.*${escapeSpecialChars(req.query.subtitle)}.*`,
-                    //             flags: "ALL",
-                    //             case_insensitive: true,
-                    //             max_determinized_states: 10000
-                    //         }
-                    //     }
-                    // }] : [],
                     ...req.query.description ? [{
                         "regexp": {
                             "metadata.description": {
@@ -128,6 +108,7 @@ router.get('/search', (req, res) => {
                         nested: {
                             path: "subtitles",
                             inner_hits: {
+                                size: 0,
                                 _source: false
                             },
                             query: {
@@ -148,7 +129,7 @@ router.get('/search', (req, res) => {
     }
 
     let body = {
-        index: 'rtv-oddaje-2',     //oddaje-nested | tv-oddaje
+        index: 'rtv-oddaje',     //oddaje-nested | tv-oddaje
         query: query,
         // highlight: {
         //     fields: {
@@ -172,12 +153,224 @@ router.get('/search', (req, res) => {
 
     client.search(body)
         .then(resp => {
+            // let result = getSubtitles(resp.hits.hits, req.query.searchQuery || req.query.subtitles)
             res.send({data: resp.hits.hits, totalHits: resp.hits.total.value})
         })
         .catch(err => {
             res.status(err.meta.statusCode).send(err);
         })
 })
+
+
+router.get('/search/highlight', (req, res) => {
+
+    // if (!Object.prototype.hasOwnProperty.call(req.query, 'searchQuery')) {
+    //     throw new Error("Missing field searchQuery")
+    // }
+
+    console.log(req.query)
+    let query;
+    if (req.query.searchQuery) {    // || req.query.searchQuery === ''
+        if (req.query.searchQuery === '') {
+            query = {
+                match_all: {}
+            }
+        } else {
+            query = {
+                bool: {
+                    should: [
+                        {
+                            "regexp": {
+                                "metadata.showName": {
+                                    value: `.*${escapeSpecialChars(req.query.searchQuery)}.*`,
+                                    flags: "ALL",
+                                    case_insensitive: true,
+                                    max_determinized_states: 10000
+                                }
+                            }
+                        },
+                        {
+                            "regexp": {
+                                "metadata.title": {
+                                    value: `.*${escapeSpecialChars(req.query.searchQuery)}.*`,
+                                    flags: "ALL",
+                                    case_insensitive: true,
+                                    max_determinized_states: 10000
+                                }
+                            }
+                        },
+                        {
+                            "regexp": {
+                                "metadata.description": {
+                                    value: `.*${escapeSpecialChars(req.query.searchQuery)}.*`,
+                                    flags: "ALL",
+                                    case_insensitive: true,
+                                    max_determinized_states: 10000
+                                }
+                            }
+                        },
+                        {
+                            nested: {
+                                path: "subtitles",
+                                query: {
+                                    "regexp": {
+                                        "subtitles.text": {
+                                            value: `.*${escapeSpecialChars(req.query.searchQuery)}.*`,
+                                            flags: "ALL",
+                                            case_insensitive: true,
+                                            max_determinized_states: 10000
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    } else {
+        query = {
+            bool: {
+                must: [
+                    ...req.query.showName ? [{
+                        "regexp": {
+                            "metadata.showName": {
+                                value: `.*${escapeSpecialChars(req.query.showName)}.*`,
+                                flags: "ALL",
+                                case_insensitive: true,
+                                max_determinized_states: 10000
+                            }
+                        }
+                    }] : [],
+                    ...req.query.title ? [{
+                        "regexp": {
+                            "metadata.title": {
+                                value: `.*${escapeSpecialChars(req.query.title)}.*`,
+                                flags: "ALL",
+                                case_insensitive: true,
+                                max_determinized_states: 10000
+                            }
+                        }
+                    }] : [],
+                    ...req.query.description ? [{
+                        "regexp": {
+                            "metadata.description": {
+                                value: `.*${escapeSpecialChars(req.query.description)}.*`,
+                                flags: "ALL",
+                                case_insensitive: true,
+                                max_determinized_states: 10000
+                            }
+                        }
+                    }] : [],
+                    ...req.query.subtitles ? [{
+                        nested: {
+                            path: "subtitles",
+                            query: {
+                                "regexp": {
+                                    "subtitles.text": {
+                                        value: `.*${escapeSpecialChars(req.query.subtitles)}.*`,
+                                        flags: "ALL",
+                                        case_insensitive: true,
+                                        max_determinized_states: 10000
+                                    }
+                                }
+                            }
+                        }
+                    }] : []
+                ]
+            }
+        }
+    }
+
+    let body = {
+        index: 'rtv-oddaje',     //oddaje-nested | tv-oddaje
+        query: query,
+        highlight: {
+            fields: {
+            ...((req.query.searchQuery && req.query.searchQuery !== '') || req.query.subtitles) ? {"subtitles.text": {}} : {}
+            }
+        },
+        _source: ["metadata"]
+    }
+
+    if (req.query.params) {
+        let params = JSON.parse(req.query.params);
+        console.log(params)
+
+        if (params.take) {
+            body.size = params.take;
+            if (params.page) {
+                body.from = (params.page - 1) * params.take;
+            }
+        }
+    }
+
+    client.search(body)
+        .then(async resp => {
+            let result = []
+            for (const entry of resp.hits.hits) {
+                await getSubtitles(entry._id, req.query.searchQuery || req.query.subtitles).then(val => {
+                    // console.log(val.hits.hits[0]?.inner_hits?.subtitles.hits.hits)
+                    let tmp = entry
+                    tmp._source.subtitles = val.hits.hits[0]?.inner_hits?.subtitles.hits.hits ? val.hits.hits[0].inner_hits.subtitles.hits.hits : {}
+                    result.push(tmp)
+                })
+            }
+            res.send({data: result, totalHits: resp.hits.total.value})
+        })
+        .catch(err => {
+            res.status(err.meta?.statusCode || 400).send(err);
+        })
+})
+
+
+async function getSubtitles(id, text) {
+    let query = {
+        bool: {
+            must: [
+                {
+                    term: {
+                        _id: id
+                    }
+                },
+                {
+                    nested: {
+                        path: "subtitles",
+                        inner_hits: {
+                            size: 100
+                        },
+                        query: {
+                            "regexp": {
+                                "subtitles.text": {
+                                    value: `.*${escapeSpecialChars(text)}.*`,
+                                    flags: "ALL",
+                                    case_insensitive: true,
+                                    max_determinized_states: 10000
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    }
+
+    let body = {
+        index: 'rtv-oddaje',     //oddaje-nested | tv-oddaje
+        query: query
+    }
+
+    let subtitles = {}
+    await client.search(body)
+        .then(resp => {
+            subtitles = resp
+        })
+        .catch(err => {
+            console.error(err)
+            subtitles = {}
+        })
+    return subtitles
+}
 
 const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ';
 
