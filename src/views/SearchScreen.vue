@@ -80,6 +80,9 @@
                 <vue-feather type="clock" size="13"></vue-feather>
                 <small>&nbsp;{{ formatLength(item._source.metadata.duration) }}</small>
               </div>
+              <div v-if="item.highlight && item.highlight['subtitles.text.keyword']?.length" class="matchedSubtitlesIndicator">
+                <vue-feather type="align-center" size="13"></vue-feather>
+              </div>
             </div>
             <small>
 
@@ -244,7 +247,6 @@ export default {
   methods: {
     async search(newSearch = false, searchType = null) {
       if (newSearch) {
-        console.log("here")
         this.ctx.currentPage = 1;
         this.prevSearch = {..._.clone(this.searchFilters)};
         this.prevSearch.searchType = searchType;

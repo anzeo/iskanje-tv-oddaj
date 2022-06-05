@@ -96,3 +96,13 @@ body {
   color: white;
   font-weight: bold;
 }
+
+.matchedSubtitlesIndicator {
+  position: absolute;
+  bottom: 0.2rem;
+  right: 0.2rem;
+  display: flex;
+  align-items: center;
+  color: white;
+  font-weight: bold;
+}
