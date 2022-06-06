@@ -80,7 +80,7 @@
                 <vue-feather type="clock" size="13"></vue-feather>
                 <small>&nbsp;{{ formatLength(item._source.metadata.duration) }}</small>
               </div>
-              <div v-if="item.highlight && item.highlight['subtitles.text.keyword']?.length" class="matchedSubtitlesIndicator">
+              <div v-if="item._source.matchedSubtitles?.length" class="matchedSubtitlesIndicator">
                 <vue-feather type="align-center" size="13"></vue-feather>
               </div>
             </div>
