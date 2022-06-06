@@ -9,7 +9,7 @@ import {app, client, router} from "./server.js";
 //
 //     console.log(req.query)
 //     let query;
-//     if (req.query.searchQuery) {    // || req.query.searchQuery === ''
+//     if (req.query.searchQuery || req.query.searchQuery === '') {    // || req.query.searchQuery === ''
 //         if (req.query.searchQuery === '') {
 //             query = {
 //                 match_all: {}
@@ -19,50 +19,27 @@ import {app, client, router} from "./server.js";
 //                 bool: {
 //                     should: [
 //                         {
-//                             "regexp": {
-//                                 "metadata.showName.keyword": {
-//                                     value: `.*${escapeSpecialChars(req.query.searchQuery)}.*`,
-//                                     flags: "ALL",
-//                                     case_insensitive: true,
-//                                     max_determinized_states: 10000
-//                                 }
+//                             match_phrase: {
+//                                 "metadata.showName": escapeSpecialChars(req.query.searchQuery)
 //                             }
 //                         },
 //                         {
-//                             "regexp": {
-//                                 "metadata.title.keyword": {
-//                                     value: `.*${escapeSpecialChars(req.query.searchQuery)}.*`,
-//                                     flags: "ALL",
-//                                     case_insensitive: true,
-//                                     max_determinized_states: 10000
-//                                 }
+//                             match_phrase: {
+//                                 "metadata.title": escapeSpecialChars(req.query.searchQuery)
 //                             }
 //                         },
 //                         {
-//                             "regexp": {
-//                                 "metadata.description.keyword": {
-//                                     value: `.*${escapeSpecialChars(req.query.searchQuery)}.*`,
-//                                     flags: "ALL",
-//                                     case_insensitive: true,
-//                                     max_determinized_states: 10000
-//                                 }
+//                             match_phrase: {
+//                                 "metadata.description": escapeSpecialChars(req.query.searchQuery)
 //                             }
 //                         },
 //                         {
 //                             nested: {
 //                                 path: "subtitles",
-//                                 inner_hits: {
-//                                     size: 0,
-//                                     _source: false
-//                                 },
+//                                 inner_hits: { size: 100},
 //                                 query: {
-//                                     "regexp": {
-//                                         "subtitles.text.keyword": {
-//                                             value: `.*${escapeSpecialChars(req.query.searchQuery)}.*`,
-//                                             flags: "ALL",
-//                                             case_insensitive: true,
-//                                             max_determinized_states: 10000
-//                                         }
+//                                     match_phrase: {
+//                                         "subtitles.text": escapeSpecialChars(req.query.searchQuery)
 //                                     }
 //                                 }
 //                             }
@@ -76,50 +53,27 @@ import {app, client, router} from "./server.js";
 //             bool: {
 //                 must: [
 //                     ...req.query.showName ? [{
-//                         "regexp": {
-//                             "metadata.showName.keyword": {
-//                                 value: `.*${escapeSpecialChars(req.query.showName)}.*`,
-//                                 flags: "ALL",
-//                                 case_insensitive: true,
-//                                 max_determinized_states: 10000
-//                             }
+//                         match_phrase: {
+//                             "metadata.showName": escapeSpecialChars(req.query.showName)
 //                         }
 //                     }] : [],
 //                     ...req.query.title ? [{
-//                         "regexp": {
-//                             "metadata.title.keyword": {
-//                                 value: `.*${escapeSpecialChars(req.query.title)}.*`,
-//                                 flags: "ALL",
-//                                 case_insensitive: true,
-//                                 max_determinized_states: 10000
-//                             }
+//                         match_phrase: {
+//                             "metadata.title": escapeSpecialChars(req.query.title)
 //                         }
 //                     }] : [],
 //                     ...req.query.description ? [{
-//                         "regexp": {
-//                             "metadata.description.keyword": {
-//                                 value: `.*${escapeSpecialChars(req.query.description)}.*`,
-//                                 flags: "ALL",
-//                                 case_insensitive: true,
-//                                 max_determinized_states: 10000
-//                             }
+//                         match_phrase: {
+//                             "metadata.description": escapeSpecialChars(req.query.description)
 //                         }
 //                     }] : [],
 //                     ...req.query.subtitles ? [{
 //                         nested: {
 //                             path: "subtitles",
-//                             inner_hits: {
-//                                 size: 0,
-//                                 _source: false
-//                             },
+//                             inner_hits: { size: 100},
 //                             query: {
-//                                 "regexp": {
-//                                     "subtitles.text.keyword": {
-//                                         value: `.*${escapeSpecialChars(req.query.subtitles)}.*`,
-//                                         flags: "ALL",
-//                                         case_insensitive: true,
-//                                         max_determinized_states: 10000
-//                                     }
+//                                 match_phrase: {
+//                                     "subtitles.text": escapeSpecialChars(req.query.subtitles)
 //                                 }
 //                             }
 //                         }
@@ -130,7 +84,7 @@ import {app, client, router} from "./server.js";
 //     }
 //
 //     let body = {
-//         index: 'rtv-oddaje-nested',     //oddaje-nested | tv-oddaje
+//         index: 'rtv-oddaje-nested-standard',     //oddaje-nested | tv-oddaje
 //         query: query,
 //         // highlight: {
 //         //     fields: {
@@ -171,7 +125,7 @@ router.get('/search', (req, res) => {
 
     console.log(req.query)
     let query;
-    if (req.query.searchQuery) {    // || req.query.searchQuery === ''
+    if (req.query.searchQuery || req.query.searchQuery === '') {
         if (req.query.searchQuery === '') {
             query = {
                 match_all: {}
@@ -181,46 +135,26 @@ router.get('/search', (req, res) => {
                 bool: {
                     should: [
                         {
-                            "regexp": {
-                                "metadata.showName.keyword": {
-                                    value: `.*${escapeSpecialChars(req.query.searchQuery)}.*`,
-                                    flags: "ALL",
-                                    case_insensitive: true,
-                                    max_determinized_states: 10000
-                                }
+                            match_phrase: {
+                                "metadata.showName": escapeSpecialChars(req.query.searchQuery)
                             }
                         },
                         {
-                            "regexp": {
-                                "metadata.title.keyword": {
-                                    value: `.*${escapeSpecialChars(req.query.searchQuery)}.*`,
-                                    flags: "ALL",
-                                    case_insensitive: true,
-                                    max_determinized_states: 10000
-                                }
+                            match_phrase: {
+                                "metadata.title": escapeSpecialChars(req.query.searchQuery)
                             }
                         },
                         {
-                            "regexp": {
-                                "metadata.description.keyword": {
-                                    value: `.*${escapeSpecialChars(req.query.searchQuery)}.*`,
-                                    flags: "ALL",
-                                    case_insensitive: true,
-                                    max_determinized_states: 10000
-                                }
+                            match_phrase: {
+                                "metadata.description": escapeSpecialChars(req.query.searchQuery)
                             }
                         },
                         {
                             nested: {
                                 path: "subtitles",
                                 query: {
-                                    "regexp": {
-                                        "subtitles.text.keyword": {
-                                            value: `.*${escapeSpecialChars(req.query.searchQuery)}.*`,
-                                            flags: "ALL",
-                                            case_insensitive: true,
-                                            max_determinized_states: 10000
-                                        }
+                                    match_phrase: {
+                                        "subtitles.text": escapeSpecialChars(req.query.searchQuery)
                                     }
                                 }
                             }
@@ -234,46 +168,26 @@ router.get('/search', (req, res) => {
             bool: {
                 must: [
                     ...req.query.showName ? [{
-                        "regexp": {
-                            "metadata.showName.keyword": {
-                                value: `.*${escapeSpecialChars(req.query.showName)}.*`,
-                                flags: "ALL",
-                                case_insensitive: true,
-                                max_determinized_states: 10000
-                            }
+                        match_phrase: {
+                            "metadata.showName": escapeSpecialChars(req.query.showName)
                         }
                     }] : [],
                     ...req.query.title ? [{
-                        "regexp": {
-                            "metadata.title.keyword": {
-                                value: `.*${escapeSpecialChars(req.query.title)}.*`,
-                                flags: "ALL",
-                                case_insensitive: true,
-                                max_determinized_states: 10000
-                            }
+                        match_phrase: {
+                            "metadata.title": escapeSpecialChars(req.query.title)
                         }
                     }] : [],
                     ...req.query.description ? [{
-                        "regexp": {
-                            "metadata.description.keyword": {
-                                value: `.*${escapeSpecialChars(req.query.description)}.*`,
-                                flags: "ALL",
-                                case_insensitive: true,
-                                max_determinized_states: 10000
-                            }
+                        match_phrase: {
+                            "metadata.description": escapeSpecialChars(req.query.description)
                         }
                     }] : [],
                     ...req.query.subtitles ? [{
                         nested: {
                             path: "subtitles",
                             query: {
-                                "regexp": {
-                                    "subtitles.text.keyword": {
-                                        value: `.*${escapeSpecialChars(req.query.subtitles)}.*`,
-                                        flags: "ALL",
-                                        case_insensitive: true,
-                                        max_determinized_states: 10000
-                                    }
+                                match_phrase: {
+                                    "subtitles.text": escapeSpecialChars(req.query.subtitles)
                                 }
                             }
                         }
@@ -284,11 +198,11 @@ router.get('/search', (req, res) => {
     }
 
     let body = {
-        index: 'rtv-oddaje-nested',     //oddaje-nested | tv-oddaje
+        index: 'rtv-oddaje-nested-standard',     //oddaje-nested | tv-oddaje
         query: query,
         highlight: {
             fields: {
-                ...((req.query.searchQuery && req.query.searchQuery !== '') || req.query.subtitles) ? {"subtitles.text.keyword": {}} : {}
+                ...((req.query.searchQuery && req.query.searchQuery !== '') || req.query.subtitles) ? {"subtitles.text": {}} : {}
             }
         },
     }
@@ -338,13 +252,8 @@ async function getSubtitles(id, text) {
                     }
                 },
                 {
-                    "regexp": {
-                        "text.keyword": {
-                            value: `.*${escapeSpecialChars(text)}.*`,
-                            flags: "ALL",
-                            case_insensitive: true,
-                            max_determinized_states: 10000
-                        }
+                    match_phrase: {
+                        "text": escapeSpecialChars(text)
                     }
                 }
             ]
@@ -352,7 +261,7 @@ async function getSubtitles(id, text) {
     }
 
     let body = {
-        index: 'rtv-oddaje-podnapisi',     //oddaje-nested | tv-oddaje
+        index: 'rtv-oddaje-podnapisi-standard',     //oddaje-nested | tv-oddaje
         size: 500,
         scroll: '1m',
         query: query
