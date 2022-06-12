@@ -155,32 +155,66 @@
           <p class="mb-0">Iskanje deluje po poljih:</p>
           <small>
             <ul>
-              <li>title (naslov),</li>
-              <li>subtitle (podnaslov),</li>
-              <li>description (opis) in</li>
-              <li>text (podnapis)</li>
+              <li>Ime oddaje,</li>
+              <li>Naslov</li>
+              <li>Opis</li>
+              <li>Podnapisi</li>
             </ul>
           </small>
           <p class="mb-0 fw-bold">Iskanje po vseh poljih (relacija ALI)</p>
           <small><b>Primer vnosa: </b><em>iskalni niz</em></small>
           <p class="mb-0 mt-3 fw-bold">Iskanje po željenih poljih (relacija IN)</p>
-          <small><b>Primer vnosa: </b><em>imePolja1: iskalni niz imePolja2: iskalni niz</em></small>
+          <small class="d-flex">Klik na ikono
+            <vue-feather type="sliders" size="13"
+                         style="color: rgb(160, 160, 160); transform: rotate(90deg)"></vue-feather>
+          </small>
         </div>
       </b-modal>
 
-      <b-modal id="videoModal" @hide="closeVideo('video1')">
-        <template v-if="selectedShow">
-          <vue3-video-player
-              ref="videoPlayer"
-              :key="'player_' + Date.now()"
-              v-if="selectedShow.streams && Object.entries(selectedShow.streams).length"
-              :core="HLSCore"
-              :title="selectedShow.metadata.showName"
-              :view-core="viewCore.bind(null, 'video1')"
-              :src="selectedShow.streams && Object.entries(selectedShow.streams).length ? (selectedShow.streams['hls_sec'] || selectedShow.streams['hls'] || selectedShow.streams[Object.keys(selectedShow.streams)[0]]) : ''"
-          >
-          </vue3-video-player>
-        </template>
+      <b-modal size="xl" id="videoModal" @hide="closeVideo('video1')" hide-footer>
+        <div v-if="selectedShow">
+          <div class="d-flex">
+            <div class="d-flex flex-column w-100">
+              <vue3-video-player
+                  ref="videoPlayer"
+                  :key="'player_' + Date.now()"
+                  v-if="selectedShow.streams && Object.entries(selectedShow.streams).length"
+                  :core="HLSCore"
+                  :view-core="viewCore.bind(null, 'video1')"
+                  :src="selectedShow.streams && Object.entries(selectedShow.streams).length ? (selectedShow.streams['hls_sec'] || selectedShow.streams['hls'] || selectedShow.streams[Object.keys(selectedShow.streams)[0]]) : ''"
+              >
+              </vue3-video-player>
+              <div class="mt-2">
+                <div class="showTitle">{{ selectedShow.metadata.title }}</div>
+                <div class="showInfo">
+                  <div>
+                    <span>{{ selectedShow.metadata.showName }}</span>
+                  </div>
+                  <div class="">
+                    <small>
+                      <vue-feather type="clock" size="13"></vue-feather>
+                      {{ formatLengthWithText(selectedShow.metadata.duration) }}
+                    </small>
+                    <small class="ms-3">
+                      <vue-feather type="calendar" size="13"></vue-feather>
+                      {{ formatDate(selectedShow.metadata.broadcastDate) }}
+                    </small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="matchedTranscriptsContainer" v-if="selectedShow.matchedSubtitles">
+              <div class="matchedSubtitlesHeader">Ujemajoči podnapisi</div>
+              <div>
+                <div v-for="(subtitle, index) in selectedShow.matchedSubtitles" :key="'subtitle_' + index">
+                  <span>
+                    {{ formatOffsetTime(subtitle._source.start) }} {{ subtitle._source.text }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </b-modal>
     </div>
   </div>
@@ -304,8 +338,14 @@ export default {
       return moment.utc(time * 1000).format(format);
     },
 
+    formatLengthWithText(time) {
+      let format = time >= 3600 ? 'H [h] m [min] s [s]' : 'm [min] s [s]'
+      return moment.utc(time * 1000).format(format);
+    },
+
     formatOffsetTime(time) {
-      return moment.utc(time * 1000).format('HH:mm:ss.SS');
+      let format = time >= 3600 ? 'HH:mm:ss' : 'mm:ss'
+      return moment.utc(time * 1000).format(format);
     },
 
     viewCore(id, player) {
@@ -335,8 +375,7 @@ export default {
             streams = obj['mediaFiles_sl'].reduce((max, item) => max.bitrate > item.bitrate ? max : item).streams
 
           this.selectedShow.streams = streams
-        }
-        else
+        } else
           this.selectedShow.streams = {}
       } catch (e) {
         console.error(e)
