@@ -117,25 +117,50 @@ body {
 .showInfo {
   color: #767676;
   font-size: 1rem;
+
+  .showDescription {
+    padding-top: 8px;
+    font-size: 0.9rem;
+  }
 }
 
 .vcp-container {
   min-width: 100%;
+  height: auto;
 
   video {
     min-width: 100%;
+    height: auto;
   }
 }
 
 .matchedTranscriptsContainer {
+  display: flex;
+  flex-direction: column;
   padding-left: 12px;
   width: 300px;
   min-width: 300px;
-  max-height: 100%;
 
   .matchedSubtitlesHeader {
     font-weight: bold;
     font-size: 1rem;
     margin-bottom: 5px;
+  }
+
+  .subtitleContainer {
+    overflow-y: scroll;
+    position: absolute;
+    height: 100%;
+  }
+
+  .transcription {
+    display: block;
+    padding: 5px 0;
+    line-height: 20px;
+    cursor: pointer;
+    font-weight: lighter;
+  }
+  .transcription:hover {
+    color: #2180e3;
   }
 }

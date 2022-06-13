@@ -171,7 +171,7 @@
         </div>
       </b-modal>
 
-      <b-modal size="xl" id="videoModal" @hide="closeVideo('video1')" hide-footer>
+      <b-modal size="xl" id="videoModal" @hide="closeVideo('videoPlayer')" no-close-on-backdrop hide-footer>
         <div v-if="selectedShow">
           <div class="d-flex">
             <div class="d-flex flex-column w-100">
@@ -180,36 +180,44 @@
                   :key="'player_' + Date.now()"
                   v-if="selectedShow.streams && Object.entries(selectedShow.streams).length"
                   :core="HLSCore"
-                  :view-core="viewCore.bind(null, 'video1')"
+                  :view-core="viewCore.bind(null, 'videoPlayer')"
                   :src="selectedShow.streams && Object.entries(selectedShow.streams).length ? (selectedShow.streams['hls_sec'] || selectedShow.streams['hls'] || selectedShow.streams[Object.keys(selectedShow.streams)[0]]) : ''"
               >
               </vue3-video-player>
               <div class="mt-2">
                 <div class="showTitle">{{ selectedShow.metadata.title }}</div>
                 <div class="showInfo">
-                  <div>
-                    <span>{{ selectedShow.metadata.showName }}</span>
+                  <div style="line-height: 25px">
+                    <div>
+                      <span>{{ selectedShow.metadata.showName }}</span>
+                    </div>
+                    <div class="d-flex">
+                      <small class="d-flex align-items-center">
+                        <vue-feather type="clock" size="13" class="me-1"></vue-feather>
+                        {{ formatLengthWithText(selectedShow.metadata.duration) }}
+                      </small>
+                      <small class="d-flex align-items-center ms-3">
+                        <vue-feather type="calendar" size="13" class="me-1"></vue-feather>
+                        {{ formatDate(selectedShow.metadata.broadcastDate) }}
+                      </small>
+                    </div>
                   </div>
-                  <div class="">
-                    <small>
-                      <vue-feather type="clock" size="13"></vue-feather>
-                      {{ formatLengthWithText(selectedShow.metadata.duration) }}
-                    </small>
-                    <small class="ms-3">
-                      <vue-feather type="calendar" size="13"></vue-feather>
-                      {{ formatDate(selectedShow.metadata.broadcastDate) }}
-                    </small>
+                  <div class="showDescription">
+                    {{ selectedShow.metadata.description }}
                   </div>
                 </div>
               </div>
             </div>
             <div class="matchedTranscriptsContainer" v-if="selectedShow.matchedSubtitles">
               <div class="matchedSubtitlesHeader">Ujemajoči podnapisi</div>
-              <div>
-                <div v-for="(subtitle, index) in selectedShow.matchedSubtitles" :key="'subtitle_' + index">
-                  <span>
-                    {{ formatOffsetTime(subtitle._source.start) }} {{ subtitle._source.text }}
+              <div style="flex: 1; position: relative">
+                <div class="subtitleContainer">
+                  <div v-for="(subtitle, index) in selectedShow.matchedSubtitles" :key="'subtitle_' + index"
+                       class="transcription" @click="moveToTimestamp(subtitle)">
+                  <span class="">
+                    {{ formatOffsetTime(subtitle._source.start) }} - {{ subtitle._source.text }}
                   </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -382,10 +390,15 @@ export default {
       }
     },
 
+    moveToTimestamp(subtitle) {
+      console.log(subtitle._source.start)
+      this.players['videoPlayer'].$video.currentTime = subtitle._source.start;
+    },
+
     closeVideo(id) {
       this.players && this.players[id] && this.players[id].destroy();
       this.selectedShow = null;
-    }
+    },
   }
 }
 </script>
