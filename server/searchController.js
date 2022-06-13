@@ -264,7 +264,14 @@ async function getSubtitles(id, text) {
         index: 'rtv-oddaje-podnapisi-standard',     //oddaje-nested | tv-oddaje
         size: 500,
         scroll: '1m',
-        query: query
+        query: query,
+        sort: [
+            {
+                start: {
+                    order: "asc"
+                }
+            }
+        ]
     }
 
     const respQueue = []
