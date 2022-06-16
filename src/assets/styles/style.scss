@@ -100,36 +100,97 @@ body {
 
 .matchedSubtitlesIndicator {
   position: absolute;
-  bottom: 0.2rem;
-  right: 0.2rem;
+  bottom: 0.3rem;
+  right: 0.3rem;
   display: flex;
   align-items: center;
   color: white;
-  font-weight: bold;
+}
+
+#videoModal{
+  .modal-content {
+    background-color: #141414;
+    color: #dedede;
+  }
+  .modal-header {
+    border: 0;
+  }
+}
+
+.navButtonsRow {
+  display: flex;
+  justify-content: end;
+  padding: 6px 10px;
+
+  div {
+    border-bottom: 2px solid transparent;
+    transition: 0.2s;
+    cursor: pointer;
+  }
+
+  div:hover {
+    border-color: #e0a56c;
+    transform: scale(1.04);
+  }
+
+  .active {
+    border-color: #e0a56c;
+  }
+}
+
+#showDataTabs {
+  .nav.nav-tabs {
+    display: none;
+  }
+}
+
+.showDataContainer {
+  padding: 10px 15px 10px 10px;
+  background: rgb(28, 28, 28);
 }
 
 .showTitle {
   font-weight: bold;
   font-size: 1.1rem;
-  margin-bottom: 5px;
+  margin-bottom: 2px;
 }
 
 .showInfo {
-  color: #767676;
+  color: #a1a1a1;
   font-size: 1rem;
 
   .showDescription {
     padding-top: 8px;
     font-size: 0.9rem;
+    text-align: justify;
   }
+}
+
+.allSubtitlesContainer {
+  max-height: 350px;
+  overflow-y: scroll;
+  background: rgb(28, 28, 28);
+  padding: 10px 15px 10px 10px;
+
+  .transcription {
+    display: block;
+    padding: 4px 0;
+    line-height: 17px;
+    cursor: pointer;
+    font-weight: lighter;
+    font-size: 15px;
+  }
+
 }
 
 .vcp-container {
   min-width: 100%;
+  width: 100%;
   height: auto;
 
   video {
     min-width: 100%;
+    width: 100%;
     height: auto;
   }
 }
@@ -147,7 +208,7 @@ body {
     margin-bottom: 5px;
   }
 
-  .subtitleContainer {
+  .matchedSubtitlesContainer {
     overflow-y: scroll;
     position: absolute;
     height: 100%;
@@ -155,10 +216,11 @@ body {
 
   .transcription {
     display: block;
-    padding: 5px 0;
+    padding: 4px 0;
     line-height: 20px;
     cursor: pointer;
     font-weight: lighter;
+    font-size: 15px;
   }
   .transcription:hover {
     color: #2180e3;

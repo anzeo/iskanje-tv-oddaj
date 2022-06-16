@@ -1,6 +1,6 @@
 <template>
   <div>
-    <loading :active="isLoading" :can-cancel="false"></loading>
+    <loading :active="isLoading" :can-cancel="false" loader="bars"></loading>
     <b-row class="m-0 searchBar-row">
       <b-col md="10" class="mx-auto">
         <div class="d-flex">
@@ -81,7 +81,7 @@
                 <small>&nbsp;{{ formatLength(item._source.metadata.duration) }}</small>
               </div>
               <div v-if="item._source.matchedSubtitles?.length" class="matchedSubtitlesIndicator">
-                <vue-feather type="align-center" size="13"></vue-feather>
+                <vue-feather type="align-center" size="16"></vue-feather>
               </div>
             </div>
             <small>
@@ -171,59 +171,7 @@
         </div>
       </b-modal>
 
-      <b-modal size="xl" id="videoModal" @hide="closeVideo('videoPlayer')" no-close-on-backdrop hide-footer>
-        <div v-if="selectedShow">
-          <div class="d-flex">
-            <div class="d-flex flex-column w-100">
-              <vue3-video-player
-                  ref="videoPlayer"
-                  :key="'player_' + Date.now()"
-                  v-if="selectedShow.streams && Object.entries(selectedShow.streams).length"
-                  :core="HLSCore"
-                  :view-core="viewCore.bind(null, 'videoPlayer')"
-                  :src="selectedShow.streams && Object.entries(selectedShow.streams).length ? (selectedShow.streams['hls_sec'] || selectedShow.streams['hls'] || selectedShow.streams[Object.keys(selectedShow.streams)[0]]) : ''"
-              >
-              </vue3-video-player>
-              <div class="mt-2">
-                <div class="showTitle">{{ selectedShow.metadata.title }}</div>
-                <div class="showInfo">
-                  <div style="line-height: 25px">
-                    <div>
-                      <span>{{ selectedShow.metadata.showName }}</span>
-                    </div>
-                    <div class="d-flex">
-                      <small class="d-flex align-items-center">
-                        <vue-feather type="clock" size="13" class="me-1"></vue-feather>
-                        {{ formatLengthWithText(selectedShow.metadata.duration) }}
-                      </small>
-                      <small class="d-flex align-items-center ms-3">
-                        <vue-feather type="calendar" size="13" class="me-1"></vue-feather>
-                        {{ formatDate(selectedShow.metadata.broadcastDate) }}
-                      </small>
-                    </div>
-                  </div>
-                  <div class="showDescription">
-                    {{ selectedShow.metadata.description }}
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="matchedTranscriptsContainer" v-if="selectedShow.matchedSubtitles">
-              <div class="matchedSubtitlesHeader">Ujemajoči podnapisi</div>
-              <div style="flex: 1; position: relative">
-                <div class="subtitleContainer">
-                  <div v-for="(subtitle, index) in selectedShow.matchedSubtitles" :key="'subtitle_' + index"
-                       class="transcription" @click="moveToTimestamp(subtitle)">
-                  <span class="">
-                    {{ formatOffsetTime(subtitle._source.start) }} - {{ subtitle._source.text }}
-                  </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </b-modal>
+      <TVShowModal ref="tvShowModal"></TVShowModal>
     </div>
   </div>
 
@@ -235,14 +183,15 @@ import moment from "moment";
 import _ from 'lodash';
 import Loading from 'vue3-loading-overlay';
 import 'vue3-loading-overlay/dist/vue3-loading-overlay.css';
-import HLSCore from '@cloudgeek/playcore-hls';
 import '@cloudgeek/vue3-video-player/dist/vue3-video-player.css';
+import TVShowModal from "@/views/TVShowModal";
 
 export default {
   name: "SearchScreen",
 
   components: {
-    Loading
+    Loading,
+    TVShowModal
   },
 
   data() {
@@ -274,13 +223,12 @@ export default {
         count: 0
       },
       filtersVisible: false,
-      HLSCore,
-      players: {},
-      selectedShow: null
     }
   },
 
   watch: {},
+
+  computed: {},
 
   mounted() {
     this.search();
@@ -351,54 +299,9 @@ export default {
       return moment.utc(time * 1000).format(format);
     },
 
-    formatOffsetTime(time) {
-      let format = time >= 3600 ? 'HH:mm:ss' : 'mm:ss'
-      return moment.utc(time * 1000).format(format);
-    },
-
-    viewCore(id, player) {
-      console.log(id, player);
-      this.players[id] = player;
-    },
-
-    async showVideo(item) {
-      try {
-        this.selectedShow = item._source;
-        let streams = {}
-        this.$bvModal.show('videoModal');
-
-        // get video streams
-        let url = `${app.config.globalProperties.api.baseUrl}media/video/${item._source.metadata.id}`
-        let resp = await app.axios.get(url)
-        let obj = resp.data.response;
-
-        if (obj) {
-          if (obj['addaptiveMedia'])
-            for (const [key, value] of Object.entries(obj['addaptiveMedia'])) {
-              streams[key] = value
-            }
-          else if (obj['mediaFiles'] && obj['mediaFiles'].length)
-            streams = obj['mediaFiles'].reduce((max, item) => max.bitrate > item.bitrate ? max : item).streams
-          else if (obj['mediaFiles_sl'] && obj['mediaFiles_sl'].length)
-            streams = obj['mediaFiles_sl'].reduce((max, item) => max.bitrate > item.bitrate ? max : item).streams
-
-          this.selectedShow.streams = streams
-        } else
-          this.selectedShow.streams = {}
-      } catch (e) {
-        console.error(e)
-      }
-    },
-
-    moveToTimestamp(subtitle) {
-      console.log(subtitle._source.start)
-      this.players['videoPlayer'].$video.currentTime = subtitle._source.start;
-    },
-
-    closeVideo(id) {
-      this.players && this.players[id] && this.players[id].destroy();
-      this.selectedShow = null;
-    },
+    showVideo(item) {
+      this.$refs.tvShowModal.$open(item._source);
+    }
   }
 }
 </script>
