@@ -1,0 +1,32 @@
+{
+  "dashboard" : {
+    "btn": {
+      "play": "Predvajaj",
+      "pause": "Premor",
+      "fullscreen": "Celozaslonski način",
+      "exitFullscreen": "Izhod iz celozaslonskega načina",
+      "mute": "Izklopi zvok",
+      "unmute": "Vklopi zvok",
+      "back": "Nazaj",
+      "pip": "Slika v sliki"
+    },
+    "settings" : {
+      "autoplay": "Sam. predv.",
+      "loop": "Zanka",
+      "speed": "Hitrost",
+      "resolution": "Kakovost"
+    }
+  },
+  "layers": {
+    "error": {
+      "title": "Napaka!",
+      "2404": "Vira videoposnetka ni mogoče najti",
+      "2502": "Napaka medija",
+      "2503": "Posnetka ni mogoče dekodirati",
+      "2504": "Videoposnetka ni mogoče predvajati"
+    },
+    "loading": {
+      "msg": "Nalaganje..."
+    }
+  }
+}

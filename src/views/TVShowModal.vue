@@ -1,5 +1,6 @@
 <template>
-  <b-modal ref="videoModal" id="videoModal" :size="modalSize" @hide="closeVideo('videoPlayer')" no-close-on-backdrop
+  <b-modal ref="videoModal" id="videoModal" :size="modalSize" @hide="closeVideo('videoPlayer')" body-class="p-0"
+           no-close-on-backdrop header-close-white
            hide-footer>
     <div v-if="show">
       <Loading :active="isLoading" :can-cancel="false" :is-full-page="false" loader="bars"></Loading>
@@ -20,17 +21,17 @@
           <div class="navButtonsRow">
             <div class="d-flex align-items-center px-1 me-4" :class="{'active': activeTab === 0}"
                  @click="activeTab = 0">
-              <vue-feather type="film" size="21" class="me-2"></vue-feather>
-              <span style="font-size: 21px">Info</span>
+              <vue-feather type="film" size="20" class="me-2"></vue-feather>
+              <span style="font-size: 19px">Info</span>
             </div>
             <div class="d-flex align-items-center px-1" :class="{'active': activeTab === 1}" @click="activeTab = 1">
-              <vue-feather type="align-center" size="21" class="me-2"></vue-feather>
-              <span style="font-size: 21px">Podnapisi</span>
+              <vue-feather type="align-center" size="20" class="me-2"></vue-feather>
+              <span style="font-size: 19px">Podnapisi</span>
             </div>
           </div>
           <b-tabs id="showDataTabs" v-model="activeTab">
             <b-tab no-body>
-              <div class="showDataContainer" style="background: #1c1c1c">
+              <div class="showDataContainer">
                 <div class="showTitle">{{ show.metadata.title }}</div>
                 <div class="showInfo">
                   <div style="line-height: 25px;">
@@ -55,7 +56,8 @@
               </div>
             </b-tab>
             <b-tab no-body>
-              <div class="allSubtitlesContainer" style="max-height: 350px; overflow-y: auto">
+              <div class="allSubtitlesContainer" style="max-height: 350px; overflow-y: auto"
+                   :style="{'border-bottom-right-radius': show.matchedSubtitles ? '0' : '0.3rem'}">
                 <div v-for="(subtitle, index) in show.subtitles" :key="'subtitle_' + index"
                      class="transcription" @click="moveToTimestamp(subtitle.start)">
                   <span class="">
@@ -89,6 +91,7 @@ import HLSCore from "@cloudgeek/playcore-hls";
 import app from "@/main";
 import moment from "moment";
 import Loading from "vue3-loading-overlay";
+import '@cloudgeek/vue3-video-player/dist/vue3-video-player.css';
 
 export default {
   name: "tvShowModal",
@@ -125,6 +128,7 @@ export default {
   methods: {
     $open(selectedShow) {
       if (!selectedShow) return
+      this.activeTab = 0;
       this.show = selectedShow;
       this.getVideoStreams();
       this.$bvModal.show('videoModal');
@@ -188,6 +192,7 @@ export default {
 
     moveToTimestamp(time) {
       console.log(time)
+      console.log(this.$refs.videoPlayer.$refs)
       this.players['videoPlayer'].$video.currentTime = time;
     },
 
@@ -200,5 +205,4 @@ export default {
 </script>
 
 <style scoped>
-
 </style>

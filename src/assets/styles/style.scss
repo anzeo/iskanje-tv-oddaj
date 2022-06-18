@@ -29,6 +29,16 @@ body {
   padding-top: 2rem !important;
 }
 
+.filterIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  background: white;
+  border: 1px solid rgb(206, 212, 218);
+  cursor: pointer;
+}
+
 #filtersCard {
   label {
     align-self: center;
@@ -111,9 +121,11 @@ body {
   .modal-content {
     background-color: #141414;
     color: #dedede;
+    border: 0;
   }
   .modal-header {
     border: 0;
+    padding: 0.9rem 1rem;
   }
 }
 
@@ -145,8 +157,10 @@ body {
 }
 
 .showDataContainer {
-  padding: 10px 15px 10px 10px;
-  background: rgb(28, 28, 28);
+  padding: 10px 15px 15px 15px;
+  background: rgb(26 26 26);
+  border-bottom-left-radius: 0.3rem;
+  border-bottom-right-radius: 0.3rem;
 }
 
 .showTitle {
@@ -156,7 +170,7 @@ body {
 }
 
 .showInfo {
-  color: #a1a1a1;
+  color: #afafaf;
   font-size: 1rem;
 
   .showDescription {
@@ -169,8 +183,9 @@ body {
 .allSubtitlesContainer {
   max-height: 350px;
   overflow-y: scroll;
-  background: rgb(28, 28, 28);
-  padding: 10px 15px 10px 10px;
+  background: rgb(26 26 26);
+  padding: 10px 15px 10px 15px;
+  border-bottom-left-radius: 0.3rem;
 
   .transcription {
     display: block;
@@ -181,26 +196,20 @@ body {
     font-size: 15px;
   }
 
-}
-
-.vcp-container {
-  min-width: 100%;
-  width: 100%;
-  height: auto;
-
-  video {
-    min-width: 100%;
-    width: 100%;
-    height: auto;
+  .transcription:hover {
+    color: #e0a56c;
   }
 }
 
 .matchedTranscriptsContainer {
   display: flex;
   flex-direction: column;
-  padding-left: 12px;
+  padding: 10px 5px 12px 12px;
   width: 300px;
   min-width: 300px;
+  background: #1f1f1f;
+  border-bottom-right-radius: 0.3rem;
+
 
   .matchedSubtitlesHeader {
     font-weight: bold;
@@ -223,6 +232,6 @@ body {
     font-size: 15px;
   }
   .transcription:hover {
-    color: #2180e3;
+    color: #e0a56c;
   }
 }

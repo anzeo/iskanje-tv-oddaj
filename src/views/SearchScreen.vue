@@ -183,7 +183,6 @@ import moment from "moment";
 import _ from 'lodash';
 import Loading from 'vue3-loading-overlay';
 import 'vue3-loading-overlay/dist/vue3-loading-overlay.css';
-import '@cloudgeek/vue3-video-player/dist/vue3-video-player.css';
 import TVShowModal from "@/views/TVShowModal";
 
 export default {
@@ -307,39 +306,5 @@ export default {
 </script>
 
 <style>
-#dropdown.btn:focus {
-  box-shadow: none !important;
-}
 
-.filterIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  background: white;
-  border: 1px solid rgb(206, 212, 218);
-  cursor: pointer;
-}
-
-/*.test-player-wrap {*/
-/*  width: 720px;*/
-/*  height: 405px;*/
-/*  position: relative;*/
-/*  margin: 20px auto;*/
-/*}*/
-.btn-play {
-  color: white;
-  margin-right: 10px;
-  margin-left: 15px !important;
-  cursor: pointer;
-}
-
-.btn-play svg {
-  width: 16px;
-}
-
-.vcp-dashboard {
-  width: 100%;
-  margin-left: 0;
-}
 </style>

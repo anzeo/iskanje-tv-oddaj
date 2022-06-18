@@ -14,6 +14,7 @@ import 'bootstrap-vue-3/dist/bootstrap-vue-3.css';
 import 'floating-vue/dist/style.css'
 
 import './assets/styles/style.scss';
+import './assets/styles/video-player.scss';
 
 const app = createApp(App)
 
@@ -21,7 +22,7 @@ app.use(router);
 app.use(BootstrapVue3);
 app.use(VueAxios, axios);
 app.use(FloatingVue);
-app.use(Vue3VideoPlayer);
+app.use(Vue3VideoPlayer, {lang: require('./assets/lang/video-player-language.json')});
 
 app.component(VueFeather.name, VueFeather);
 

@@ -1,0 +1,64 @@
+.vcp-container {
+  min-width: 100%;
+  width: 100%;
+
+  video {
+    min-width: 100%;
+    width: 100%;
+  }
+
+  .loading-layer {
+    background: #060606;
+  }
+}
+
+.vcp-layer.play-pause-layer {
+
+  .btn-play {
+    margin-left: 7px !important;
+    cursor: pointer;
+
+    path {
+      fill: #e3944d;
+    }
+  }
+}
+
+.btn-control .tips {
+}
+
+.fullscreen .vcp-dashboard {
+  bottom: 0;
+  width: 98%;
+  margin-left: 1%;
+  margin-right: 1%;
+}
+
+.vcp-dashboard {
+  width: 100%;
+  margin-left: 0;
+  height: 45px;
+  bottom: -1px;
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE10+/Edge */
+  user-select: none; /* Standard */
+
+  .btn-off-fullscreen {
+    .tips {
+      left: -55px;
+    }
+  }
+
+  .btn-control-panel {
+    min-height: auto;
+    ul.current-panel li:nth-child(-n+2) {
+      display: none;
+    }
+  }
+}
+
+.vcp-controls {
+  bottom: 0;
+  height: 40px;
+}
