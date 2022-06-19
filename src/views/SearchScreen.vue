@@ -86,9 +86,9 @@
               </div>
             </div>
             <small>
-              <p class="fw-bold mb-0" style="margin-bottom: -2px !important;">{{ item._source.metadata.showName }}</p>
+              <p class="fw-bold mb-0">{{ item._source.metadata.showName }}</p>
+              <p class="fw-light fst-italic mb-0" style="margin-bottom: -2px !important;">{{ item._source.metadata.title }}</p>
               <small class="text-end">{{ formatDate(item._source.metadata.broadcastDate) }}</small>
-              <p class="fw-light fst-italic mb-0">{{ item._source.metadata.title }}</p>
 
             </small>
           </div>
@@ -153,11 +153,11 @@ export default {
     return {
       isLoading: false,
       searchFilters: {
-        searchString: this.$route.query.searchString ? decodeURIComponent(this.$route.query.searchString) : "",
-        showName: this.$route.query.showName ? decodeURIComponent(this.$route.query.showName) : "",
-        title: this.$route.query.title ? decodeURIComponent(this.$route.query.title) : "",
-        description: this.$route.query.description ? decodeURIComponent(this.$route.query.description) : "",
-        subtitles: this.$route.query.subtitles ? decodeURIComponent(this.$route.query.subtitles) : "",
+        searchString: /*this.$route.query.searchString ? decodeURIComponent(this.$route.query.searchString) :*/ "",
+        showName: /*this.$route.query.showName ? decodeURIComponent(this.$route.query.showName) :*/ "",
+        title: /*this.$route.query.title ? decodeURIComponent(this.$route.query.title) :*/ "",
+        description: /*this.$route.query.description ? decodeURIComponent(this.$route.query.description) :*/ "",
+        subtitles: /*this.$route.query.subtitles ? decodeURIComponent(this.$route.query.subtitles) :*/ "",
       },
       prevSearch: {
         // searchString: this.$route.query.searchString ? decodeURIComponent(this.$route.query.searchString) : "",
@@ -222,7 +222,7 @@ export default {
       if (this.ctx.currentPage !== 1)
         query['page'] = this.ctx.currentPage;
 
-      await this.$router.replace({query: {...query}})
+      // await this.$router.replace({query: {...query}})
 
       let url = `${app.config.globalProperties.api.baseUrl}search?${searchParams.join('&')}&params=${encodedParams}`;
 

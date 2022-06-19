@@ -61,7 +61,7 @@
                    :style="{'border-bottom-right-radius': show.matchedSubtitles ? '0' : '0.3rem'}">
                 <div v-for="(subtitle, index) in show.subtitles" :key="'subtitle_' + index"
                      class="transcription" @click="moveToTimestamp(subtitle.start)">
-                  <span class="">
+                  <span>
                     {{ formatOffsetTime(subtitle.start) }} - {{ subtitle.text }}
                   </span>
                 </div>
@@ -75,7 +75,7 @@
             <div class="matchedSubtitlesContainer">
               <div v-for="(subtitle, index) in show.matchedSubtitles" :key="'subtitle_' + index"
                    class="transcription" @click="moveToTimestamp(subtitle._source.start)">
-                  <span class="">
+                  <span>
                     {{ formatOffsetTime(subtitle._source.start) }} - {{ subtitle._source.text }}
                   </span>
               </div>
@@ -124,7 +124,7 @@ export default {
         return this.$refs.videoPlayer && this.$refs.videoPlayer.src ? this.$refs.videoPlayer.src : Date.now();
       }
       return Date.now();
-    },
+    }
   },
 
   methods: {
@@ -194,7 +194,6 @@ export default {
 
     moveToTimestamp(time) {
       console.log(time)
-      console.log(this.$refs.videoPlayer.$refs)
       this.players['videoPlayer'].$video.currentTime = time;
     },
 
