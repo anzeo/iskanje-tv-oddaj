@@ -14,6 +14,7 @@
               :view-core="viewCore.bind(null, 'videoPlayer')"
               :src="show.streams && Object.entries(show.streams).length ? (show.streams['hls_sec'] || show.streams['hls'] || show.streams[Object.keys(show.streams)[0]]) : ''"
           >
+<!--              @loadeddata="hideCursor"-->
           </vue3-video-player>
           <div v-else class="d-flex justify-content-center align-items-center" style="height: 250px">
             <h3 v-if="!isLoading">Vidoposnetek ni na voljo...</h3>
@@ -93,6 +94,7 @@ import moment from "moment";
 import Loading from "vue3-loading-overlay";
 import '@cloudgeek/vue3-video-player/dist/vue3-video-player.css';
 
+// let timeout = null
 export default {
   name: "tvShowModal",
 
@@ -122,7 +124,7 @@ export default {
         return this.$refs.videoPlayer && this.$refs.videoPlayer.src ? this.$refs.videoPlayer.src : Date.now();
       }
       return Date.now();
-    }
+    },
   },
 
   methods: {
@@ -200,6 +202,17 @@ export default {
       this.players && this.players[id] && this.players[id].destroy();
       this.show = null;
     },
+
+    // hideCursor() {
+    //   console.log("here", this.$refs.videoPlayer.$container.querySelector('.vue-core-video-player-layers'))
+    //   this.$refs.videoPlayer.$container.querySelector('.vue-core-video-player-layers').addEventListener('mousemove', (e) => {
+    //     clearTimeout(timeout)
+    //     e.target.style.removeProperty('cursor')
+    //     timeout = setTimeout(() => {
+    //       e.target.style.cursor = 'none'
+    //     },2000)
+    //   })
+    // }
   }
 }
 </script>

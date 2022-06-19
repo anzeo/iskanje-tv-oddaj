@@ -74,7 +74,8 @@
               <div class="playIcon">
                 <vue-feather type="play-circle" size="28"></vue-feather>
               </div>
-              <img :src="item._source.metadata.thumbnail"
+              <img :src="item._source.metadata.thumbnail || '../assets/images/thumbnail-unavailable.png'"
+                   @error="onImageError"
                    style="position: relative; width: 100%; height: auto; z-index: -1"/>
               <div class="showDuration">
                 <vue-feather type="clock" size="13"></vue-feather>
@@ -85,37 +86,12 @@
               </div>
             </div>
             <small>
-
-              <p class="fw-bold mb-0">{{ item._source.metadata.showName }}</p>
+              <p class="fw-bold mb-0" style="margin-bottom: -2px !important;">{{ item._source.metadata.showName }}</p>
+              <small class="text-end">{{ formatDate(item._source.metadata.broadcastDate) }}</small>
               <p class="fw-light fst-italic mb-0">{{ item._source.metadata.title }}</p>
+
             </small>
           </div>
-          <!--          <div class="p-2 d-flex flex-column overflow-hidden"-->
-          <!--               style="border: 1px solid; border-radius: 8px; max-height: 350px">-->
-          <!--            <p class="fw-bold mb-0">{{ item._source.metadata.showName }}</p>-->
-          <!--            <p class="fw-light fst-italic mb-0">{{ item._source.metadata.title }}</p>-->
-          <!--            <p class="mb-3 small">{{ item._source.metadata.subtitle }}</p>-->
-          <!--            <template v-if="item.inner_hits && item.inner_hits.subtitles.hits.hits.length">-->
-          <!--              <small class="fw-bold">Ujemajoči podnapisi: </small>-->
-          <!--              <div class="overflow-auto">-->
-          <!--                <div v-for="subtitle in item.inner_hits.subtitles.hits.hits" :key="'subtitle_' + subtitle._id"-->
-          <!--                     class="d-table-row">-->
-          <!--                  <small class="d-table-cell pe-2">-->
-          <!--                    {{ formatOffsetTime(subtitle._source.start) }}-->
-          <!--                  </small>-->
-          <!--                  <p class="pb-2 d-table-cell">{{ subtitle._source.text }}</p>-->
-          <!--                </div>-->
-          <!--              </div>-->
-          <!--            </template>-->
-          <!--            <template v-else>-->
-          <!--              <small class="fw-bold">Čas trajanja: </small>-->
-          <!--              <p class="mb-2"> {{ formatLength(item._source.metadata.duration) }}</p>-->
-          <!--              <small class="fw-bold">Datum predvajanja: </small>-->
-          <!--              <p class="mb-2">{{ formatDate(item._source.metadata.playDate) }}</p>-->
-          <!--              <small class="fw-bold">Opis: </small>-->
-          <!--              <p class="overflow-auto">{{ item._source.metadata.description }}</p>-->
-          <!--            </template>-->
-          <!--          </div>-->
         </b-col>
 
         <b-pagination
@@ -127,26 +103,6 @@
             align="center"
             @update:modelValue="search(false)">
         </b-pagination>
-        <!--      <template v-else>-->
-        <!--        <b-col v-if="!items.length">-->
-        <!--          <p>Ni rezultatov za prikaz...</p>-->
-        <!--        </b-col>-->
-        <!--        <b-col v-else v-for="item in items" :key="'item_' + item._id" class="mb-3" md="4" sm="6">-->
-        <!--          <div class="p-2" style="border: 1px solid; border-radius: 8px">-->
-        <!--            <p class="fw-bold">{{ item._source.metadata.title }}</p>-->
-        <!--            <small class="fw-bold">Podnapisi: </small>-->
-        <!--            <div style="max-height: 150px; overflow-y: auto">-->
-        <!--              <div v-for="(subtitle, index) in item._source.subtitles" :key="'subtitle_' + index"-->
-        <!--                   class="d-table-row">-->
-        <!--                <small class="d-table-cell pe-2">-->
-        <!--                  {{ formatOffsetTime(subtitle.offset) }}-->
-        <!--                </small>-->
-        <!--                <p class="pb-2 d-table-cell">{{ subtitle.text }}</p>-->
-        <!--              </div>-->
-        <!--            </div>-->
-        <!--          </div>-->
-        <!--        </b-col>-->
-        <!--      </template>-->
 
       </b-row>
 
@@ -300,6 +256,10 @@ export default {
 
     showVideo(item) {
       this.$refs.tvShowModal.$open(item._source);
+    },
+
+    onImageError(e) {
+      e.target.src = require("../assets/images/thumbnail-unavailable.png")
     }
   }
 }
