@@ -32,7 +32,7 @@
           </div>
           <b-tabs id="showDataTabs" v-model="activeTab">
             <b-tab no-body>
-              <div class="showDataContainer">
+              <div class="showDataContainer" :style="{'border-bottom-right-radius': show.matchedSubtitles && show.matchedSubtitles.length ? '0' : '0.3rem'}">
                 <div class="showTitle">{{ show.metadata.title }}</div>
                 <div class="showInfo">
                   <div style="line-height: 25px;">
@@ -57,8 +57,8 @@
               </div>
             </b-tab>
             <b-tab no-body>
-              <div class="allSubtitlesContainer" style="max-height: 350px; overflow-y: auto"
-                   :style="{'border-bottom-right-radius': show.matchedSubtitles ? '0' : '0.3rem'}">
+              <div class="allSubtitlesContainer"
+                   :style="{'border-bottom-right-radius': show.matchedSubtitles && show.matchedSubtitles.length ? '0' : '0.3rem'}">
                 <div v-for="(subtitle, index) in show.subtitles" :key="'subtitle_' + index"
                      class="transcription" @click="moveToTimestamp(subtitle.start)">
                   <span>
@@ -69,7 +69,7 @@
             </b-tab>
           </b-tabs>
         </div>
-        <div class="matchedTranscriptsContainer" v-if="show.matchedSubtitles">
+        <div class="matchedTranscriptsContainer" v-if="show.matchedSubtitles && show.matchedSubtitles.length">
           <div class="matchedSubtitlesHeader">Ujemajoči podnapisi</div>
           <div style="flex: 1; position: relative">
             <div class="matchedSubtitlesContainer">
@@ -114,7 +114,7 @@ export default {
 
   computed: {
     modalSize() {
-      if (this.show && this.show.matchedSubtitles)
+      if (this.show && this.show.matchedSubtitles && this.show.matchedSubtitles.length)
         return 'xl'
       return 'lg';
     },
