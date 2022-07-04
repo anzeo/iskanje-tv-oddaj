@@ -47,6 +47,10 @@
                                 label-size="sm">
                     <b-form-input id="subtitles" v-model="searchFilters.subtitles"></b-form-input>
                   </b-form-group>
+                  <b-form-group label="Govor" label-for="speech" label-class="py-0" label-cols-md="2"
+                                label-size="sm">
+                    <b-form-input id="speech" v-model="searchFilters.speech"></b-form-input>
+                  </b-form-group>
                   <b-row class="pt-2">
                     <b-col class="d-flex justify-content-end">
                       <b-button size="sm" variant="primary" @click="search(true, 'filters')">Poišči</b-button>
@@ -169,8 +173,6 @@ export default {
       },
       searchString: "",
       prevSearchString: "",
-      searchFields: ['showName', 'title', 'subtitle', 'description', 'text'],
-      autocompleteItems: [],
       items: [],
       ctx: {
         currentPage: this.$route.query.page ? parseInt(this.$route.query.page) : 1,
