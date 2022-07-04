@@ -158,6 +158,16 @@ router.get('/search', (req, res) => {
                                     }
                                 }
                             }
+                        },
+                        {
+                            nested: {
+                                path: "speech",
+                                query: {
+                                    match_phrase: {
+                                        "speech.text": escapeSpecialChars(req.query.searchQuery)
+                                    }
+                                }
+                            }
                         }
                     ]
                 }
@@ -191,6 +201,16 @@ router.get('/search', (req, res) => {
                                 }
                             }
                         }
+                    }] : [],
+                    ...req.query.speech ? [{
+                        nested: {
+                            path: "speech",
+                            query: {
+                                match_phrase: {
+                                    "speech.text": escapeSpecialChars(req.query.speech)
+                                }
+                            }
+                        }
                     }] : []
                 ]
             }
@@ -200,11 +220,11 @@ router.get('/search', (req, res) => {
     let body = {
         index: 'rtv-oddaje-nested-standard',     //oddaje-nested | tv-oddaje
         query: query,
-        highlight: {
-            fields: {
-                ...((req.query.searchQuery && req.query.searchQuery !== '') || req.query.subtitles) ? {"subtitles.text": {}} : {}
-            }
-        },
+        // highlight: {
+        //     fields: {
+        //         ...((req.query.searchQuery && req.query.searchQuery !== '') || req.query.subtitles) ? {"subtitles.text": {}} : {}
+        //     }
+        // },
     }
 
     if (req.query.params) {
@@ -222,13 +242,18 @@ router.get('/search', (req, res) => {
     client.search(body)
         .then(async resp => {
             let result = []
-            if ((req.query.searchQuery && req.query.searchQuery !== '') || (req.query.subtitles && req.query.subtitles !== ''))
+            if ((req.query.searchQuery && req.query.searchQuery !== '') || (req.query.subtitles && req.query.subtitles !== '') || (req.query.speech && req.query.speech !== ''))
                 for (const entry of resp.hits.hits) {
-                    await getSubtitles(entry._source.metadata.id, req.query.searchQuery || req.query.subtitles).then(val => {
-                        let tmp = entry
-                        tmp._source.matchedSubtitles = val
-                        result.push(tmp)
-                    })
+                    let tmp = entry
+                    if ((req.query.searchQuery && req.query.searchQuery !== '') || (req.query.subtitles && req.query.subtitles !== ''))
+                        await getSubtitles(entry._source.metadata.id, req.query.searchQuery || req.query.subtitles).then(val => {
+                            tmp._source.matchedSubtitles = val
+                        })
+                    if ((req.query.searchQuery && req.query.searchQuery !== '') || (req.query.speech && req.query.speech !== ''))
+                        await getSpeech(entry._source.metadata.id, req.query.searchQuery || req.query.speech).then(val => {
+                            tmp._source.matchedSpeech = val
+                        })
+                    result.push(tmp)
                 }
             else
                 result = resp.hits.hits
@@ -298,6 +323,70 @@ async function getSubtitles(id, text) {
             }))
         }
         return subtitles
+    } catch (e) {
+        console.error(e)
+        return []
+    }
+}
+
+async function getSpeech(id, text) {
+    let query = {
+        bool: {
+            must: [
+                {
+                    term: {
+                        id: {
+                            value: id
+                        }
+                    }
+                },
+                {
+                    match_phrase: {
+                        "text": escapeSpecialChars(text)
+                    }
+                }
+            ]
+        }
+    }
+
+    let body = {
+        index: 'rtv-oddaje-govor-standard',
+        size: 500,
+        scroll: '1m',
+        query: query,
+        sort: [
+            {
+                start: {
+                    order: "asc"
+                }
+            }
+        ]
+    }
+
+    const respQueue = []
+    let speech = []
+    try {
+        const resp = await client.search(body)
+        if (resp.hits.total.value <= 500)
+            return resp.hits.hits
+        respQueue.push(resp)
+
+        while (respQueue.length) {
+            const body = respQueue.shift()
+
+            body.hits.hits.forEach(hit => {
+                speech.push(hit)
+            })
+
+            if (body.hits.total.value === speech.length)
+                break
+
+            respQueue.push(await client.scroll({
+                scroll_id: body._scroll_id,
+                scroll: '1m'
+            }))
+        }
+        return speech
     } catch (e) {
         console.error(e)
         return []
