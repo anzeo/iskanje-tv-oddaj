@@ -10,7 +10,7 @@
               ref="videoPlayer"
               :key="keyFromSrc"
               v-if="show.streams && Object.entries(show.streams).length"
-              :core="HLSCore"
+              :core="show.streams.hasOwnProperty('hls_sec') || show.streams.hasOwnProperty('hls') ? HLSCore : null"
               :view-core="viewCore.bind(null, 'videoPlayer')"
               :src="show.streams && Object.entries(show.streams).length ? (show.streams['hls_sec'] || show.streams['hls'] || show.streams[Object.keys(show.streams)[0]]) : ''"
           >
