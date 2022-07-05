@@ -108,10 +108,21 @@ body {
   font-weight: bold;
 }
 
-.matchedSubtitlesIndicator {
+.matchedTranscriptsIndicator {
   position: absolute;
   bottom: 0.3rem;
   right: 0.3rem;
+  display: flex;
+}
+
+.matchedSubtitlesIndicator {
+  display: flex;
+  align-items: center;
+  color: white;
+  margin-right: 5px;
+}
+
+.matchedSpeechIndicator {
   display: flex;
   align-items: center;
   color: white;
@@ -182,6 +193,27 @@ body {
 }
 
 .allSubtitlesContainer {
+  max-height: 350px;
+  overflow-y: scroll;
+  background: rgb(26 26 26);
+  padding: 10px 15px 10px 15px;
+  border-bottom-left-radius: 0.3rem;
+
+  .transcription {
+    display: block;
+    padding: 4px 0;
+    line-height: 17px;
+    cursor: pointer;
+    font-weight: lighter;
+    font-size: 15px;
+  }
+
+  .transcription:hover {
+    color: #e0a56c;
+  }
+}
+
+.allSpeechContainer {
   max-height: 350px;
   overflow-y: scroll;
   background: rgb(26 26 26);

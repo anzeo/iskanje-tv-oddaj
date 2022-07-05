@@ -4,7 +4,7 @@
            hide-footer>
     <div v-if="show">
       <Loading :active="isLoading" :can-cancel="false" :is-full-page="false" loader="bars"></Loading>
-      <div class="d-flex">
+      <div class="d-lg-flex">
         <div class="d-flex flex-column w-100">
           <vue3-video-player
               ref="videoPlayer"
@@ -25,14 +25,18 @@
               <vue-feather type="film" size="20" class="me-2"></vue-feather>
               <span style="font-size: 19px">Info</span>
             </div>
-            <div class="d-flex align-items-center px-1" :class="{'active': activeTab === 1}" @click="activeTab = 1">
+            <div class="d-flex align-items-center px-1 me-4" :class="{'active': activeTab === 1}" @click="activeTab = 1">
               <vue-feather type="align-center" size="20" class="me-2"></vue-feather>
               <span style="font-size: 19px">Podnapisi</span>
+            </div>
+            <div class="d-flex align-items-center px-1" :class="{'active': activeTab === 2}" @click="activeTab = 2">
+              <vue-feather type="mic" size="18" style="margin-right: 6px"></vue-feather>
+              <span style="font-size: 19px">Govor</span>
             </div>
           </div>
           <b-tabs id="showDataTabs" v-model="activeTab">
             <b-tab no-body>
-              <div class="showDataContainer" :style="{'border-bottom-right-radius': show.matchedSubtitles && show.matchedSubtitles.length ? '0' : '0.3rem'}">
+              <div class="showDataContainer" :style="{'border-bottom-right-radius': hasMatchedTranscripts ? '0' : '0.3rem'}">
                 <div class="showTitle">{{ show.metadata.title }}</div>
                 <div class="showInfo">
                   <div style="line-height: 25px;">
@@ -58,7 +62,10 @@
             </b-tab>
             <b-tab no-body>
               <div class="allSubtitlesContainer"
-                   :style="{'border-bottom-right-radius': show.matchedSubtitles && show.matchedSubtitles.length ? '0' : '0.3rem'}">
+                   :style="{'border-bottom-right-radius': hasMatchedTranscripts ? '0' : '0.3rem'}">
+                <div v-if="!show.subtitles?.length" class="p-2 text-center">
+                  Za to oddajo podnapisi žal niso na voljo
+                </div>
                 <div v-for="(subtitle, index) in show.subtitles" :key="'subtitle_' + index"
                      class="transcription" @click="moveToTimestamp(subtitle.start)">
                   <span>
@@ -67,9 +74,23 @@
                 </div>
               </div>
             </b-tab>
+            <b-tab no-body>
+              <div class="allSpeechContainer"
+                   :style="{'border-bottom-right-radius': hasMatchedTranscripts ? '0' : '0.3rem'}">
+                <div v-if="!show.speech?.length" class="p-2 text-center">
+                  Za to oddajo govor žal ni na voljo
+                </div>
+                <div v-for="(text, index) in show.speech" :key="'speech_' + index"
+                     class="transcription" @click="moveToTimestamp(text.start)">
+                  <span>
+                    {{ formatOffsetTime(text.start) }} - {{ text.text }}
+                  </span>
+                </div>
+              </div>
+            </b-tab>
           </b-tabs>
         </div>
-        <div class="matchedTranscriptsContainer" v-if="show.matchedSubtitles && show.matchedSubtitles.length">
+        <div class="matchedTranscriptsContainer" v-if="hasMatchedTranscripts">
           <div class="matchedSubtitlesHeader">Ujemajoči podnapisi</div>
           <div style="flex: 1; position: relative">
             <div class="matchedSubtitlesContainer">
@@ -77,6 +98,17 @@
                    class="transcription" @click="moveToTimestamp(subtitle._source.start)">
                   <span>
                     {{ formatOffsetTime(subtitle._source.start) }} - {{ subtitle._source.text }}
+                  </span>
+              </div>
+            </div>
+          </div>
+          <div class="matchedSubtitlesHeader">Ujemajoč govor</div>
+          <div style="flex: 1; position: relative">
+            <div class="matchedSubtitlesContainer">
+              <div v-for="(text, index) in show.matchedSpeech" :key="'speech_' + index"
+                   class="transcription" @click="moveToTimestamp(text._source.start)">
+                  <span>
+                    {{ formatOffsetTime(text._source.start) }} - {{ text._source.text }}
                   </span>
               </div>
             </div>
@@ -114,7 +146,7 @@ export default {
 
   computed: {
     modalSize() {
-      if (this.show && this.show.matchedSubtitles && this.show.matchedSubtitles.length)
+      if (this.hasMatchedTranscripts)
         return 'xl'
       return 'lg';
     },
@@ -124,6 +156,10 @@ export default {
         return this.$refs.videoPlayer && this.$refs.videoPlayer.src ? this.$refs.videoPlayer.src : Date.now();
       }
       return Date.now();
+    },
+
+    hasMatchedTranscripts() {
+      return this.show && ((this.show.matchedSubtitles && this.show.matchedSubtitles.length) || this.show.matchedSpeech && this.show.matchedSpeech.length)
     }
   },
 

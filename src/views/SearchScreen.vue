@@ -53,6 +53,8 @@
                   </b-form-group>
                   <b-row class="pt-2">
                     <b-col class="d-flex justify-content-end">
+                      <b-button size="sm" variant="secondary" class="me-2" @click="clearFilters()">Počisti filtre
+                      </b-button>
                       <b-button size="sm" variant="primary" @click="search(true, 'filters')">Poišči</b-button>
                     </b-col>
                   </b-row>
@@ -85,13 +87,20 @@
                 <vue-feather type="clock" size="13"></vue-feather>
                 <small>&nbsp;{{ formatLength(item._source.metadata.duration) }}</small>
               </div>
-              <div v-if="item._source.matchedSubtitles?.length" class="matchedSubtitlesIndicator">
-                <vue-feather type="align-center" size="16"></vue-feather>
+              <div class="matchedTranscriptsIndicator">
+                <div v-if="item._source.matchedSubtitles?.length" class="matchedSubtitlesIndicator">
+                  <vue-feather type="align-center" size="16"></vue-feather>
+                </div>
+                <div v-if="item._source.matchedSpeech?.length" class="matchedSpeechIndicator">
+                  <vue-feather type="mic" size="14"></vue-feather>
+                </div>
               </div>
             </div>
             <small>
               <p class="fw-bold mb-0">{{ item._source.metadata.showName }}</p>
-              <p class="fw-light fst-italic mb-0" style="margin-bottom: -2px !important;">{{ item._source.metadata.title }}</p>
+              <p class="fw-light fst-italic mb-0" style="margin-bottom: -2px !important;">{{
+                  item._source.metadata.title
+                }}</p>
               <small class="text-end">{{ formatDate(item._source.metadata.broadcastDate) }}</small>
 
             </small>
@@ -119,6 +128,7 @@
               <li>Naslov</li>
               <li>Opis</li>
               <li>Podnapisi</li>
+              <li>Govor</li>
             </ul>
           </small>
           <p class="mb-0 fw-bold">Iskanje po vseh poljih (relacija ALI)</p>
@@ -162,6 +172,7 @@ export default {
         title: /*this.$route.query.title ? decodeURIComponent(this.$route.query.title) :*/ "",
         description: /*this.$route.query.description ? decodeURIComponent(this.$route.query.description) :*/ "",
         subtitles: /*this.$route.query.subtitles ? decodeURIComponent(this.$route.query.subtitles) :*/ "",
+        speech: ""
       },
       prevSearch: {
         // searchString: this.$route.query.searchString ? decodeURIComponent(this.$route.query.searchString) : "",
@@ -171,8 +182,6 @@ export default {
         // subtitles: this.$route.query.subtitles ? decodeURIComponent(this.$route.query.subtitles) : "",
         // searchType: this.$route.query.searchType ? this.$route.query.searchType : null,
       },
-      searchString: "",
-      prevSearchString: "",
       items: [],
       ctx: {
         currentPage: this.$route.query.page ? parseInt(this.$route.query.page) : 1,
@@ -240,6 +249,14 @@ export default {
             console.error(err)
             this.isLoading = false;
           })
+    },
+
+    clearFilters() {
+      this.searchFilters.showName = "";
+      this.searchFilters.title = "";
+      this.searchFilters.description = "";
+      this.searchFilters.subtitles = "";
+      this.searchFilters.speech = "";
     },
 
     formatDate(date) {
