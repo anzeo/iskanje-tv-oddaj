@@ -1,121 +1,5 @@
 import {app, client, router} from "./server.js";
 
-// Klic za iskanje s pomočjo inner hits
-// router.get('/search', (req, res) => {
-//
-//     // if (!Object.prototype.hasOwnProperty.call(req.query, 'searchQuery')) {
-//     //     throw new Error("Missing field searchQuery")
-//     // }
-//
-//     console.log(req.query)
-//     let query;
-//     if (req.query.searchQuery || req.query.searchQuery === '') {    // || req.query.searchQuery === ''
-//         if (req.query.searchQuery === '') {
-//             query = {
-//                 match_all: {}
-//             }
-//         } else {
-//             query = {
-//                 bool: {
-//                     should: [
-//                         {
-//                             match_phrase: {
-//                                 "metadata.showName": escapeSpecialChars(req.query.searchQuery)
-//                             }
-//                         },
-//                         {
-//                             match_phrase: {
-//                                 "metadata.title": escapeSpecialChars(req.query.searchQuery)
-//                             }
-//                         },
-//                         {
-//                             match_phrase: {
-//                                 "metadata.description": escapeSpecialChars(req.query.searchQuery)
-//                             }
-//                         },
-//                         {
-//                             nested: {
-//                                 path: "subtitles",
-//                                 inner_hits: { size: 100},
-//                                 query: {
-//                                     match_phrase: {
-//                                         "subtitles.text": escapeSpecialChars(req.query.searchQuery)
-//                                     }
-//                                 }
-//                             }
-//                         }
-//                     ]
-//                 }
-//             }
-//         }
-//     } else {
-//         query = {
-//             bool: {
-//                 must: [
-//                     ...req.query.showName ? [{
-//                         match_phrase: {
-//                             "metadata.showName": escapeSpecialChars(req.query.showName)
-//                         }
-//                     }] : [],
-//                     ...req.query.title ? [{
-//                         match_phrase: {
-//                             "metadata.title": escapeSpecialChars(req.query.title)
-//                         }
-//                     }] : [],
-//                     ...req.query.description ? [{
-//                         match_phrase: {
-//                             "metadata.description": escapeSpecialChars(req.query.description)
-//                         }
-//                     }] : [],
-//                     ...req.query.subtitles ? [{
-//                         nested: {
-//                             path: "subtitles",
-//                             inner_hits: { size: 100},
-//                             query: {
-//                                 match_phrase: {
-//                                     "subtitles.text": escapeSpecialChars(req.query.subtitles)
-//                                 }
-//                             }
-//                         }
-//                     }] : []
-//                 ]
-//             }
-//         }
-//     }
-//
-//     let body = {
-//         index: 'rtv-oddaje-nested-standard',     //oddaje-nested | tv-oddaje
-//         query: query,
-//         // highlight: {
-//         //     fields: {
-//         //         "subtitles.text": {}
-//         //     }
-//         // },
-//         _source: ["metadata"]
-//     }
-//
-//     if (req.query.params) {
-//         let params = JSON.parse(req.query.params);
-//         console.log(params)
-//
-//         if (params.take) {
-//             body.size = params.take;
-//             if (params.page) {
-//                 body.from = (params.page - 1) * params.take;
-//             }
-//         }
-//     }
-//
-//     client.search(body)
-//         .then(resp => {
-//             // let result = getSubtitles(resp.hits.hits, req.query.searchQuery || req.query.subtitles)
-//             res.send({data: resp.hits.hits, totalHits: resp.hits.total.value})
-//         })
-//         .catch(err => {
-//             res.status(err.meta.statusCode).send(err);
-//         })
-// })
-
 // Klic za iskanje po dveh indeksih
 router.get('/search', (req, res) => {
 
@@ -260,7 +144,7 @@ router.get('/search', (req, res) => {
             res.send({data: result, totalHits: resp.hits.total.value})
         })
         .catch(err => {
-            res.status(err.meta?.statusCode || 400).send(err);
+            res.status(500).send(err);
         })
 })
 

@@ -19,7 +19,7 @@ router.get("/media/video/:id", (req, res) => {
                     })
                     .catch(err1 => {
                         console.error(err1)
-                        return res.status(400).send(err1.response?.message)
+                        return res.status(500).send(err1.response?.message)
                     })
 
             } else{
