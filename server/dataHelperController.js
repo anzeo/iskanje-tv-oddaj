@@ -6,7 +6,6 @@ router.delete('/duplicateSubtitles', (req, res) => {
     }
 
     let existing_ids = req.query.existing_ids
-    console.log(existing_ids)
     if (!Array.isArray(existing_ids))
         return res.status(400).send("Field existing_ids should be an array")
 
@@ -35,7 +34,6 @@ router.delete('/duplicateSpeech', (req, res) => {
     }
 
     let existing_ids = req.query.existing_ids
-    console.log(existing_ids)
     if (!Array.isArray(existing_ids))
         return res.status(400).send("Field existing_ids should be an array")
 
