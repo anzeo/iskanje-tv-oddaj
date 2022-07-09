@@ -42,3 +42,4 @@ export {app, client, router}
 
 import('./searchController.js');
 import('./dataController.js');
+import('./dataHelperController.js');
