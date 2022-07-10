@@ -13,8 +13,9 @@
               :core="show.streams.hasOwnProperty('hls_sec') || show.streams.hasOwnProperty('hls') ? HLSCore : null"
               :view-core="viewCore.bind(null, 'videoPlayer')"
               :src="show.streams && Object.entries(show.streams).length ? (show.streams['hls_sec'] || show.streams['hls'] || show.streams[Object.keys(show.streams)[0]]) : ''"
+              @timeupdate="setCurrentTime"
           >
-<!--              @loadeddata="hideCursor"-->
+            <!--              @loadeddata="hideCursor"-->
           </vue3-video-player>
           <div v-else class="d-flex justify-content-center align-items-center" style="height: 250px">
             <h3 v-if="!isLoading">Vidoposnetek ni na voljo...</h3>
@@ -25,7 +26,8 @@
               <vue-feather type="film" size="20" class="me-2"></vue-feather>
               <span style="font-size: 19px">Info</span>
             </div>
-            <div class="d-flex align-items-center px-1 me-4" :class="{'active': activeTab === 1}" @click="activeTab = 1">
+            <div class="d-flex align-items-center px-1 me-4" :class="{'active': activeTab === 1}"
+                 @click="activeTab = 1">
               <vue-feather type="align-center" size="20" class="me-2"></vue-feather>
               <span style="font-size: 19px">Podnapisi</span>
             </div>
@@ -36,7 +38,8 @@
           </div>
           <b-tabs id="showDataTabs" v-model="activeTab">
             <b-tab no-body>
-              <div class="showDataContainer" :style="{'border-bottom-right-radius': hasMatchedTranscripts ? '0' : '0.3rem'}">
+              <div class="showDataContainer"
+                   :style="{'border-bottom-right-radius': hasMatchedTranscripts ? '0' : '0.3rem'}">
                 <div class="showTitle">{{ show.metadata.title }}</div>
                 <div class="showInfo">
                   <div style="line-height: 25px;">
@@ -67,7 +70,8 @@
                   Za to oddajo podnapisi žal niso na voljo
                 </div>
                 <div v-for="(subtitle, index) in show.subtitles" :key="'subtitle_' + index"
-                     class="transcription" @click="moveToTimestamp(subtitle.start)">
+                     class="transcription" @click="moveToTimestamp(subtitle.start)"
+                     :class="{'currentTranscript': currentVideoTime >= subtitle.start && (currentVideoTime < show.subtitles[index + 1]?.start || index + 1 === show.subtitles.length)}">
                   <span>
                     {{ formatOffsetTime(subtitle.start) }} - {{ subtitle.text }}
                   </span>
@@ -81,7 +85,8 @@
                   Za to oddajo govor žal ni na voljo
                 </div>
                 <div v-for="(text, index) in show.speech" :key="'speech_' + index"
-                     class="transcription" @click="moveToTimestamp(text.start)">
+                     class="transcription" @click="moveToTimestamp(text.start)"
+                     :class="{'currentTranscript': currentVideoTime >= text.start && (currentVideoTime < show.speech[index + 1]?.start || index + 1 === show.speech.length)}">
                   <span>
                     {{ formatOffsetTime(text.start) }} - {{ text.text }}
                   </span>
@@ -140,7 +145,8 @@ export default {
       show: null,
       HLSCore,
       players: {},
-      activeTab: 0
+      activeTab: 0,
+      currentVideoTime: -1,
     }
   },
 
@@ -160,13 +166,14 @@ export default {
 
     hasMatchedTranscripts() {
       return this.show && ((this.show.matchedSubtitles && this.show.matchedSubtitles.length) || this.show.matchedSpeech && this.show.matchedSpeech.length)
-    }
+    },
   },
 
   methods: {
     $open(selectedShow) {
       if (!selectedShow) return
       this.activeTab = 0;
+      this.currentVideoTime = -1;
       this.show = selectedShow;
       this.getVideoStreams();
       this.$bvModal.show('videoModal');
@@ -237,6 +244,10 @@ export default {
       this.players && this.players[id] && this.players[id].destroy();
       this.show = null;
     },
+
+    setCurrentTime(e) {
+      this.currentVideoTime = e.target.currentTime
+    }
 
     // hideCursor() {
     //   console.log("here", this.$refs.videoPlayer.$container.querySelector('.vue-core-video-player-layers'))
