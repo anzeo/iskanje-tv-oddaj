@@ -15,6 +15,16 @@
               :src="show.streams && Object.entries(show.streams).length ? (show.streams['hls_sec'] || show.streams['hls'] || show.streams[Object.keys(show.streams)[0]]) : ''"
               @timeupdate="setCurrentTime"
           >
+            <template #cusControls>
+              <div class="btn-control">
+                <span class="material-icons" style="font-size: 33px; cursor: pointer" @click="rewindVideo()">replay_10</span>
+                <div class="tips">Skoči nazaj</div>
+              </div>
+              <div class="btn-control" style="margin: 0 10px;">
+                <span class="material-icons" style="font-size: 33px; cursor: pointer" @click="forwardVideo()">forward_10</span>
+                <div class="tips">Skoči naprej</div>
+              </div>
+            </template>
             <!--              @loadeddata="hideCursor"-->
           </vue3-video-player>
           <div v-else class="d-flex justify-content-center align-items-center" style="height: 250px">
@@ -247,6 +257,14 @@ export default {
 
     setCurrentTime(e) {
       this.currentVideoTime = e.target.currentTime
+    },
+
+    rewindVideo() {
+      this.players['videoPlayer'].$video.currentTime -= 10
+    },
+
+    forwardVideo() {
+      this.players['videoPlayer'].$video.currentTime += 10
     }
 
     // hideCursor() {

@@ -37,6 +37,19 @@ body {
   background: white;
   border: 1px solid rgb(206, 212, 218);
   cursor: pointer;
+
+  i {
+    -moz-transition: all .25s linear;
+    -webkit-transition: all .25s linear;
+    transition: all .25s linear;
+  }
+
+  i.down {
+    -ms-transform: rotate(180deg) !important;
+    -moz-transform: rotate(180deg) !important;
+    -webkit-transform: rotate(180deg) !important;
+    transform: rotate(180deg) !important;
+  }
 }
 
 #filtersCard {
@@ -128,12 +141,13 @@ body {
   color: white;
 }
 
-#videoModal{
+#videoModal {
   .modal-content {
     background-color: #141414;
     color: #dedede;
     border: 0;
   }
+
   .modal-header {
     border: 0;
     padding: 0.9rem 1rem;
@@ -272,6 +286,7 @@ body {
     font-weight: lighter;
     font-size: 15px;
   }
+
   .transcription:hover {
     color: #e0a56c;
   }

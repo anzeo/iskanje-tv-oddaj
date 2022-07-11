@@ -18,7 +18,7 @@
               <template #prepend>
                 <div class="filterIcon" style="border-top-left-radius: 0.25rem;"
                      :style="[!filtersVisible ? 'border-bottom-left-radius: 0.25rem': '']"
-                     v-b-toggle.filters>
+                     v-b-toggle.filters @click="rotateIcon">
                   <vue-feather type="sliders" size="18"
                                style="color: rgb(160, 160, 160); transform: rotate(90deg)"></vue-feather>
                 </div>
@@ -279,6 +279,11 @@ export default {
 
     onImageError(e) {
       e.target.src = require("../assets/images/thumbnail-unavailable.png")
+    },
+
+    rotateIcon(e) {
+      document.querySelector('.filterIcon i').classList.toggle('down')
+      console.log(e)
     }
   }
 }
