@@ -110,7 +110,7 @@
         <b-pagination
             v-if="ctx.count !== 0"
             v-model="ctx.currentPage"
-            :total-rows="ctx.count"
+            :total-rows="ctx.count > 10000 ? 10000 : ctx.count"
             :per-page="ctx.perPage"
             class="my-4"
             align="center"

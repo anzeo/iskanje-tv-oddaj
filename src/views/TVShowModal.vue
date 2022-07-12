@@ -15,17 +15,19 @@
               :src="show.streams && Object.entries(show.streams).length ? (show.streams['hls_sec'] || show.streams['hls'] || show.streams[Object.keys(show.streams)[0]]) : ''"
               @timeupdate="setCurrentTime"
           >
+            <!--              @loadeddata="hideCursor"-->
             <template #cusControls>
               <div class="btn-control">
-                <span class="material-icons" style="font-size: 33px; cursor: pointer" @click="rewindVideo()">replay_10</span>
+                <span class="material-icons" style="font-size: 33px; cursor: pointer"
+                      @click="rewindVideo()">replay_10</span>
                 <div class="tips">Skoči nazaj</div>
               </div>
               <div class="btn-control" style="margin: 0 10px;">
-                <span class="material-icons" style="font-size: 33px; cursor: pointer" @click="forwardVideo()">forward_10</span>
+                <span class="material-icons" style="font-size: 33px; cursor: pointer"
+                      @click="forwardVideo()">forward_10</span>
                 <div class="tips">Skoči naprej</div>
               </div>
             </template>
-            <!--              @loadeddata="hideCursor"-->
           </vue3-video-player>
           <div v-else class="d-flex justify-content-center align-items-center" style="height: 250px">
             <h3 v-if="!isLoading">Vidoposnetek ni na voljo...</h3>
@@ -74,16 +76,20 @@
               </div>
             </b-tab>
             <b-tab no-body>
+                            <div class="searchSubtitlesRow">
+                              <b-form-input style="height: 30px; width: 300px" placeholder="Išči po podnapisih"
+                                            @input="e => subtitleSearch = e"></b-form-input>
+                            </div>
               <div class="allSubtitlesContainer"
                    :style="{'border-bottom-right-radius': hasMatchedTranscripts ? '0' : '0.3rem'}">
                 <div v-if="!show.subtitles?.length" class="p-2 text-center">
                   Za to oddajo podnapisi žal niso na voljo
                 </div>
-                <div v-for="(subtitle, index) in show.subtitles" :key="'subtitle_' + index"
+                <div v-for="(subtitle, index) in filteredSubtitles" :key="'subtitle_' + index"
                      class="transcription" @click="moveToTimestamp(subtitle.start)"
-                     :class="{'currentTranscript': currentVideoTime >= subtitle.start && (currentVideoTime < show.subtitles[index + 1]?.start || index + 1 === show.subtitles.length)}">
+                     :class="{'currentTranscript': filteredSubtitles?.length === show.subtitles?.length && (currentVideoTime >= subtitle.start && (currentVideoTime < filteredSubtitles[index + 1]?.start || index + 1 === filteredSubtitles.length))}">
                   <span>
-                    {{ formatOffsetTime(subtitle.start) }} - {{ subtitle.text }}
+                    {{ formatOffsetTime(subtitle.start) }} - <span v-html="subtitle.text"></span>
                   </span>
                 </div>
               </div>
@@ -140,8 +146,8 @@ import app from "@/main";
 import moment from "moment";
 import Loading from "vue3-loading-overlay";
 import '@cloudgeek/vue3-video-player/dist/vue3-video-player.css';
+import _ from "lodash";
 
-// let timeout = null
 export default {
   name: "tvShowModal",
 
@@ -157,6 +163,8 @@ export default {
       players: {},
       activeTab: 0,
       currentVideoTime: -1,
+      timeout: null,
+      subtitleSearch: null
     }
   },
 
@@ -177,6 +185,20 @@ export default {
     hasMatchedTranscripts() {
       return this.show && ((this.show.matchedSubtitles && this.show.matchedSubtitles.length) || this.show.matchedSpeech && this.show.matchedSpeech.length)
     },
+
+    filteredSubtitles() {
+      if (!this.subtitleSearch || !this.subtitleSearch.trim().length)
+        return this.show.subtitles
+      if (!(this.show && this.show.subtitles?.length))
+          return []
+      return this.show.subtitles.map(sub => {
+        let tmpSub = _.clone(sub)
+        if (sub.text.toLowerCase().includes(this.subtitleSearch.toLowerCase())) {
+          tmpSub.text = sub.text.replace(new RegExp(this.subtitleSearch, "gi"), (match) => `<mark class="p-0">${match}</mark>`)
+        }
+        return tmpSub
+      })
+    }
   },
 
   methods: {
@@ -265,14 +287,21 @@ export default {
 
     forwardVideo() {
       this.players['videoPlayer'].$video.currentTime += 10
-    }
+    },
+
+    searchSubtitle(e) {
+      if (this.show?.subtitles?.length && e.length) {
+        let found = this.show.subtitles.filter(sub => sub.text.toLowerCase().includes(e.toLowerCase()));
+        console.log(found)
+      }
+      console.log(e)
+    },
 
     // hideCursor() {
-    //   console.log("here", this.$refs.videoPlayer.$container.querySelector('.vue-core-video-player-layers'))
     //   this.$refs.videoPlayer.$container.querySelector('.vue-core-video-player-layers').addEventListener('mousemove', (e) => {
-    //     clearTimeout(timeout)
+    //     clearTimeout(this.timeout)
     //     e.target.style.removeProperty('cursor')
-    //     timeout = setTimeout(() => {
+    //     this.timeout = setTimeout(() => {
     //       e.target.style.cursor = 'none'
     //     },2000)
     //   })
