@@ -18,12 +18,12 @@
             <!--              @loadeddata="hideCursor"-->
             <template #cusControls>
               <div class="btn-control">
-                <span class="material-icons" style="font-size: 33px; cursor: pointer"
+                <span class="material-icons" style="font-size: 32px; color: rgb(255, 255, 255); opacity: 0.85; cursor: pointer"
                       @click="rewindVideo()">replay_10</span>
                 <div class="tips">Skoči nazaj</div>
               </div>
               <div class="btn-control" style="margin: 0 10px;">
-                <span class="material-icons" style="font-size: 33px; cursor: pointer"
+                <span class="material-icons" style="font-size: 32px; color: rgb(255, 255, 255); opacity: 0.85; cursor: pointer"
                       @click="forwardVideo()">forward_10</span>
                 <div class="tips">Skoči naprej</div>
               </div>
@@ -76,10 +76,13 @@
               </div>
             </b-tab>
             <b-tab no-body>
-                            <div class="searchSubtitlesRow">
-                              <b-form-input style="height: 30px; width: 300px" placeholder="Išči po podnapisih"
-                                            @input="e => subtitleSearch = e"></b-form-input>
-                            </div>
+              <div class="searchSubtitlesRow" v-if="show.subtitles?.length">
+                <b-form-input style="height: 30px; width: 300px" placeholder="Išči po podnapisih"
+                              @input="e => subtitleSearch = e"></b-form-input>
+                <div class="align-self-center ms-auto">
+                  <b-form-checkbox v-model="trackSubtitles" switch><small>Sledi podnapisom</small></b-form-checkbox>
+                </div>
+              </div>
               <div class="allSubtitlesContainer"
                    :style="{'border-bottom-right-radius': hasMatchedTranscripts ? '0' : '0.3rem'}">
                 <div v-if="!show.subtitles?.length" class="p-2 text-center">
@@ -87,7 +90,7 @@
                 </div>
                 <div v-for="(subtitle, index) in filteredSubtitles" :key="'subtitle_' + index"
                      class="transcription" @click="moveToTimestamp(subtitle.start)"
-                     :class="{'currentTranscript': filteredSubtitles?.length === show.subtitles?.length && (currentVideoTime >= subtitle.start && (currentVideoTime < filteredSubtitles[index + 1]?.start || index + 1 === filteredSubtitles.length))}">
+                     :class="{'currentTranscript': currentVideoTime >= subtitle.start && (currentVideoTime < filteredSubtitles[index + 1]?.start || index + 1 === filteredSubtitles.length)}">
                   <span>
                     {{ formatOffsetTime(subtitle.start) }} - <span v-html="subtitle.text"></span>
                   </span>
@@ -95,16 +98,23 @@
               </div>
             </b-tab>
             <b-tab no-body>
+              <div class="searchSpeechRow" v-if="show.speech?.length">
+                <b-form-input style="height: 30px; width: 300px" placeholder="Išči po govoru"
+                              @input="e => speechSearch = e"></b-form-input>
+                <div class="align-self-center ms-auto">
+                  <b-form-checkbox v-model="trackSpeech" switch><small>Sledi govoru</small></b-form-checkbox>
+                </div>
+              </div>
               <div class="allSpeechContainer"
                    :style="{'border-bottom-right-radius': hasMatchedTranscripts ? '0' : '0.3rem'}">
                 <div v-if="!show.speech?.length" class="p-2 text-center">
                   Za to oddajo govor žal ni na voljo
                 </div>
-                <div v-for="(text, index) in show.speech" :key="'speech_' + index"
+                <div v-for="(text, index) in filteredSpeech" :key="'speech_' + index"
                      class="transcription" @click="moveToTimestamp(text.start)"
-                     :class="{'currentTranscript': currentVideoTime >= text.start && (currentVideoTime < show.speech[index + 1]?.start || index + 1 === show.speech.length)}">
+                     :class="{'currentTranscript': currentVideoTime >= text.start && (currentVideoTime < filteredSpeech[index + 1]?.start || index + 1 === filteredSpeech.length)}">
                   <span>
-                    {{ formatOffsetTime(text.start) }} - {{ text.text }}
+                    {{ formatOffsetTime(text.start) }} - <span v-html="text.text"></span>
                   </span>
                 </div>
               </div>
@@ -164,7 +174,11 @@ export default {
       activeTab: 0,
       currentVideoTime: -1,
       timeout: null,
-      subtitleSearch: null
+      observer: null,
+      subtitleSearch: null,
+      trackSubtitles: true,
+      speechSearch: null,
+      trackSpeech: true
     }
   },
 
@@ -190,7 +204,7 @@ export default {
       if (!this.subtitleSearch || !this.subtitleSearch.trim().length)
         return this.show.subtitles
       if (!(this.show && this.show.subtitles?.length))
-          return []
+        return []
       return this.show.subtitles.map(sub => {
         let tmpSub = _.clone(sub)
         if (sub.text.toLowerCase().includes(this.subtitleSearch.toLowerCase())) {
@@ -198,7 +212,71 @@ export default {
         }
         return tmpSub
       })
+    },
+
+    filteredSpeech() {
+      if (!this.speechSearch || !this.speechSearch.trim().length)
+        return this.show.speech
+      if (!(this.show && this.show.speech?.length))
+        return []
+      return this.show.speech.map(speech => {
+        let tmpSpeech = _.clone(speech)
+        if (speech.text.toLowerCase().includes(this.speechSearch.toLowerCase())) {
+          tmpSpeech.text = speech.text.replace(new RegExp(this.speechSearch, "gi"), (match) => `<mark class="p-0">${match}</mark>`)
+        }
+        return tmpSpeech
+      })
     }
+  },
+
+  watch: {
+    activeTab: function (newVal) {
+      if (this.observer)
+        this.observer.disconnect()
+      const _this = this
+      if (newVal === 1 && this.show.subtitles?.length) {
+        this.observer = new MutationObserver(function (mutations) {
+          if (_this.trackSubtitles) {
+            mutations.forEach(function (mutation) {
+              if (mutation.attributeName === "class") {
+                if (mutation.target.classList.contains('currentTranscript')) {
+                  let parent = document.querySelector('.allSubtitlesContainer')
+                  parent.scrollTop = mutation.target.offsetTop - parent.offsetTop
+                }
+              }
+            });
+          }
+        });
+        this.observer.observe(document.querySelector('.allSubtitlesContainer'), {
+          attributes: true,
+          subtree: true
+        })
+
+        console.log(this.observer)
+      } else if (newVal === 2 && this.show.speech?.length) {
+        this.observer = new MutationObserver(function (mutations) {
+          if (_this.trackSpeech) {
+            mutations.forEach(function (mutation) {
+              if (mutation.attributeName === "class") {
+                if (mutation.target.classList.contains('currentTranscript')) {
+                  let parent = document.querySelector('.allSpeechContainer')
+                  parent.scrollTop = mutation.target.offsetTop - parent.offsetTop
+                  // mutation.target.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' })
+                }
+              }
+            });
+          }
+        });
+        this.observer.observe(document.querySelector('.allSpeechContainer'), {
+          attributes: true,
+          subtree: true
+        })
+      }
+    }
+  },
+
+  mounted() {
+
   },
 
   methods: {
@@ -206,7 +284,13 @@ export default {
       if (!selectedShow) return
       this.activeTab = 0;
       this.currentVideoTime = -1;
+      this.observer = null;
+      this.subtitleSearch = null;
+      this.speechSearch = null;
+      this.trackSubtitles = true;
+      this.trackSpeech = true;
       this.show = selectedShow;
+      this.players = {};
       this.getVideoStreams();
       this.$bvModal.show('videoModal');
     },

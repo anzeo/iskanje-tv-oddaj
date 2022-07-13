@@ -209,6 +209,7 @@ body {
 .searchSubtitlesRow {
   padding: 10px 15px;
   background: rgb(26 26 26);
+  display: flex;
 }
 
 .allSubtitlesContainer {
@@ -234,6 +235,12 @@ body {
   .currentTranscript {
     background: #945e11;
   }
+}
+
+.searchSpeechRow {
+  padding: 10px 15px;
+  background: rgb(26 26 26);
+  display: flex;
 }
 
 .allSpeechContainer {

@@ -56,6 +56,10 @@
       display: none;
     }
   }
+
+  .btn-control:hover span {
+    opacity: 1 !important;
+  }
 }
 
 .vcp-controls {
