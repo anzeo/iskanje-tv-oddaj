@@ -18,12 +18,14 @@
             <!--              @loadeddata="hideCursor"-->
             <template #cusControls>
               <div class="btn-control">
-                <span class="material-icons" style="font-size: 32px; color: rgb(255, 255, 255); opacity: 0.85; cursor: pointer"
+                <span class="material-icons"
+                      style="font-size: 32px; color: rgb(255, 255, 255); opacity: 0.85; cursor: pointer"
                       @click="rewindVideo()">replay_10</span>
                 <div class="tips">Skoči nazaj</div>
               </div>
               <div class="btn-control" style="margin: 0 10px;">
-                <span class="material-icons" style="font-size: 32px; color: rgb(255, 255, 255); opacity: 0.85; cursor: pointer"
+                <span class="material-icons"
+                      style="font-size: 32px; color: rgb(255, 255, 255); opacity: 0.85; cursor: pointer"
                       @click="forwardVideo()">forward_10</span>
                 <div class="tips">Skoči naprej</div>
               </div>
@@ -78,7 +80,20 @@
             <b-tab no-body>
               <div class="searchSubtitlesRow" v-if="show.subtitles?.length">
                 <b-form-input style="height: 30px; width: 300px" placeholder="Išči po podnapisih"
-                              @input="e => subtitleSearch = e"></b-form-input>
+                              @input="e => {subtitleSearch = e; $nextTick(() => {jumpDown('subtitles')})}">
+                </b-form-input>
+                <b-input-group-append>
+                  <div class="d-flex ms-1 user-select-none">
+                    <vue-feather type="chevron-up" size="16" class="d-flex align-self-center" style="cursor: pointer;"
+                                 @click="jumpUp('subtitles')"></vue-feather>
+                    <vue-feather type="chevron-down" size="16" class="d-flex align-self-center mx-1"
+                                 style="cursor: pointer"
+                                 @click="jumpDown('subtitles')"></vue-feather>
+                    <span
+                        class="d-flex align-self-center ms-1">{{ visitedSubtitleNo }}/{{ allFoundSubtitlesLen }}</span>
+
+                  </div>
+                </b-input-group-append>
                 <div class="align-self-center ms-auto">
                   <b-form-checkbox v-model="trackSubtitles" switch><small>Sledi podnapisom</small></b-form-checkbox>
                 </div>
@@ -100,7 +115,19 @@
             <b-tab no-body>
               <div class="searchSpeechRow" v-if="show.speech?.length">
                 <b-form-input style="height: 30px; width: 300px" placeholder="Išči po govoru"
-                              @input="e => speechSearch = e"></b-form-input>
+                              @input="e => {speechSearch = e; $nextTick(() => {jumpDown('speech')})}"></b-form-input>
+                <b-input-group-append>
+                  <div class="d-flex ms-1 user-select-none">
+                    <vue-feather type="chevron-up" size="16" class="d-flex align-self-center" style="cursor: pointer;"
+                                 @click="jumpUp('speech')"></vue-feather>
+                    <vue-feather type="chevron-down" size="16" class="d-flex align-self-center mx-1"
+                                 style="cursor: pointer"
+                                 @click="jumpDown('speech')"></vue-feather>
+                    <span
+                        class="d-flex align-self-center ms-1">{{ visitedSpeechNo }}/{{ allFoundSpeechLen }}</span>
+
+                  </div>
+                </b-input-group-append>
                 <div class="align-self-center ms-auto">
                   <b-form-checkbox v-model="trackSpeech" switch><small>Sledi govoru</small></b-form-checkbox>
                 </div>
@@ -176,9 +203,13 @@ export default {
       timeout: null,
       observer: null,
       subtitleSearch: null,
+      visitedSubtitleNo: 0,
+      allFoundSubtitlesLen: 0,
       trackSubtitles: true,
       speechSearch: null,
-      trackSpeech: true
+      visitedSpeechNo: 0,
+      allFoundSpeechLen: 0,
+      trackSpeech: true,
     }
   },
 
@@ -201,6 +232,8 @@ export default {
     },
 
     filteredSubtitles() {
+      this.updateFoundLen('allFoundSubtitlesLen', 'set', 0)
+      this.updateVisited('visitedSubtitleNo', 'set', 0)
       if (!this.subtitleSearch || !this.subtitleSearch.trim().length)
         return this.show.subtitles
       if (!(this.show && this.show.subtitles?.length))
@@ -208,13 +241,18 @@ export default {
       return this.show.subtitles.map(sub => {
         let tmpSub = _.clone(sub)
         if (sub.text.toLowerCase().includes(this.subtitleSearch.toLowerCase())) {
-          tmpSub.text = sub.text.replace(new RegExp(this.subtitleSearch, "gi"), (match) => `<mark class="p-0">${match}</mark>`)
+          tmpSub.text = sub.text.replace(new RegExp(this.subtitleSearch, "gi"), (match) => {
+            this.updateFoundLen('allFoundSubtitlesLen', 'add', 1)
+            return `<mark class="p-0">${match}</mark>`
+          })
         }
         return tmpSub
       })
     },
 
     filteredSpeech() {
+      this.updateFoundLen('allFoundSpeechLen', 'set', 0)
+      this.updateVisited('visitedSpeechNo', 'set', 0)
       if (!this.speechSearch || !this.speechSearch.trim().length)
         return this.show.speech
       if (!(this.show && this.show.speech?.length))
@@ -222,7 +260,10 @@ export default {
       return this.show.speech.map(speech => {
         let tmpSpeech = _.clone(speech)
         if (speech.text.toLowerCase().includes(this.speechSearch.toLowerCase())) {
-          tmpSpeech.text = speech.text.replace(new RegExp(this.speechSearch, "gi"), (match) => `<mark class="p-0">${match}</mark>`)
+          tmpSpeech.text = speech.text.replace(new RegExp(this.speechSearch, "gi"), (match) => {
+            this.updateFoundLen('allFoundSpeechLen', 'add', 1)
+            return `<mark class="p-0">${match}</mark>`
+          })
         }
         return tmpSpeech
       })
@@ -380,6 +421,93 @@ export default {
       }
       console.log(e)
     },
+
+    updateFoundLen(varName, operation, val) {
+      if (operation === 'set')
+        this[varName] = val
+      else if (operation === 'add')
+        this[varName] += val
+      else if (operation === 'sub')
+        this[varName] -= val
+    },
+
+    updateVisited(varName, operation, val) {
+      if (operation === 'set')
+        this[varName] = val
+      else if (operation === 'add')
+        this[varName] += val
+      else if (operation === 'sub')
+        this[varName] -= val
+    },
+
+    jumpUp(transcriptType) {
+      if (transcriptType === 'subtitles') {
+        if (!this.allFoundSubtitlesLen)
+          return
+        let highlighted = document.querySelectorAll('.allSubtitlesContainer mark')[this.visitedSubtitleNo - 1]
+        if (highlighted)
+          highlighted.style.background = null
+        if (this.visitedSubtitleNo > 1)
+          this.updateVisited('visitedSubtitleNo', 'sub', 1)
+        else
+          this.updateVisited('visitedSubtitleNo', 'set', this.allFoundSubtitlesLen)
+
+        let parent = document.querySelector('.allSubtitlesContainer')
+        let target = parent.querySelectorAll('mark')[this.visitedSubtitleNo - 1]
+        target.style.background = 'red'
+        parent.scrollTop = target.offsetTop - parent.offsetTop - 40
+      } else if (transcriptType === 'speech') {
+        if (!this.allFoundSpeechLen)
+          return
+        let highlighted = document.querySelectorAll('.allSpeechContainer mark')[this.visitedSpeechNo - 1]
+        if (highlighted)
+          highlighted.style.background = null
+        if (this.visitedSpeechNo > 1)
+          this.updateVisited('visitedSpeechNo', 'sub', 1)
+        else
+          this.updateVisited('visitedSpeechNo', 'set', this.allFoundSpeechLen)
+
+        let parent = document.querySelector('.allSpeechContainer')
+        let target = parent.querySelectorAll('mark')[this.visitedSpeechNo - 1]
+        target.style.background = 'red'
+        parent.scrollTop = target.offsetTop - parent.offsetTop - 40
+      }
+
+    },
+
+    jumpDown(transcriptType) {
+      if (transcriptType === 'subtitles') {
+        if (!this.allFoundSubtitlesLen)
+          return
+        let highlighted = document.querySelectorAll('.allSubtitlesContainer mark')[this.visitedSubtitleNo - 1]
+        if (highlighted)
+          highlighted.style.background = null
+        if (this.visitedSubtitleNo < this.allFoundSubtitlesLen)
+          this.updateVisited('visitedSubtitleNo', 'add', 1)
+        else
+          this.updateVisited('visitedSubtitleNo', 'set', 1)
+
+        let parent = document.querySelector('.allSubtitlesContainer')
+        let target = parent.querySelectorAll('mark')[this.visitedSubtitleNo - 1]
+        target.style.background = 'red'
+        parent.scrollTop = target.offsetTop - parent.offsetTop - 40
+      } else if (transcriptType === 'speech') {
+        if (!this.allFoundSpeechLen)
+          return
+        let highlighted = document.querySelectorAll('.allSpeechContainer mark')[this.visitedSpeechNo - 1]
+        if (highlighted)
+          highlighted.style.background = null
+        if (this.visitedSpeechNo < this.allFoundSpeechLen)
+          this.updateVisited('visitedSpeechNo', 'add', 1)
+        else
+          this.updateVisited('visitedSpeechNo', 'set', 1)
+
+        let parent = document.querySelector('.allSpeechContainer')
+        let target = parent.querySelectorAll('mark')[this.visitedSpeechNo - 1]
+        target.style.background = 'red'
+        parent.scrollTop = target.offsetTop - parent.offsetTop - 40
+      }
+    }
 
     // hideCursor() {
     //   this.$refs.videoPlayer.$container.querySelector('.vue-core-video-player-layers').addEventListener('mousemove', (e) => {
