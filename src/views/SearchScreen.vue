@@ -104,7 +104,7 @@
                                 :marks="true"
                                 :hide-label="true"
                                 :tooltip-formatter="val => val === 120 ? `${val}+` : val"
-                                @drag-end="ctx.currentPage = 1; search(false)"
+                                @drag-end.capture="ctx.currentPage = 1; search(false)"
                                 @click="ctx.currentPage = 1; search(false)">
                     </vue-slider>
                   </div>
@@ -159,7 +159,7 @@
           <b-pagination
               v-if="ctx.count !== 0"
               v-model="ctx.currentPage"
-              :total-rows="ctx.count > 10000 ? 10000 : ctx.count"
+              :total-rows="ctx.count > 9996 ? 9996 : ctx.count"
               :per-page="ctx.perPage"
               class="my-4"
               align="center"
@@ -275,24 +275,27 @@ export default {
 
       if (this.prevSearch.searchType === 'query') {
         query['searchString'] = encodeURIComponent(this.prevSearch.searchString);
-        query['duration'] = encodeURIComponent(JSON.stringify(this.prevSearch.duration));
         searchParams.push(`searchQuery=${encodeURIComponent(this.prevSearch.searchString)}`);
-        searchParams.push(`durationMin=${encodeURIComponent(this.prevSearch.duration[0])}`);
-        searchParams.push(`durationMax=${encodeURIComponent(this.prevSearch.duration[1])}`);
-        if (this.prevSearch.dateStart) {
-          query['dateStart'] = encodeURIComponent(this.prevSearch.dateStart)
-          searchParams.push(`dateStart=${encodeURIComponent(moment(this.prevSearch.dateStart).utc().startOf('day').toISOString())}`);
-        }
-        if (this.prevSearch.dateEnd) {
-          query['dateEnd'] = encodeURIComponent(this.prevSearch.dateEnd)
-          searchParams.push(`dateEnd=${encodeURIComponent(moment(this.prevSearch.dateEnd).utc().endOf('day').toISOString())}`);
-
-        }
       } else {
-        searchParams = Object.keys(this.prevSearch).filter(name => this.prevSearch[name] !== null && name !== 'searchString' && name !== 'searchType').map(name => {
-          query[name] = encodeURIComponent(this.prevSearch[name]);
-          return `${name}=${encodeURIComponent(this.prevSearch[name])}`
-        })
+        searchParams = Object.keys(this.prevSearch)
+            .filter(name => this.prevSearch[name] !== null && name !== 'searchString' && name !== 'searchType' && name !== 'duration' && name !== 'dateStart' && name !== 'dateEnd')
+            .map(name => {
+              query[name] = encodeURIComponent(this.prevSearch[name]);
+              return `${name}=${encodeURIComponent(this.prevSearch[name])}`
+            })
+      }
+
+      query['duration'] = encodeURIComponent(JSON.stringify(this.prevSearch.duration));
+
+      searchParams.push(`durationMin=${encodeURIComponent(this.prevSearch.duration[0])}`);
+      searchParams.push(`durationMax=${encodeURIComponent(this.prevSearch.duration[1])}`);
+      if (this.prevSearch.dateStart) {
+        query['dateStart'] = encodeURIComponent(this.prevSearch.dateStart)
+        searchParams.push(`dateStart=${encodeURIComponent(moment(this.prevSearch.dateStart).utc().startOf('day').toISOString())}`);
+      }
+      if (this.prevSearch.dateEnd) {
+        query['dateEnd'] = encodeURIComponent(this.prevSearch.dateEnd)
+        searchParams.push(`dateEnd=${encodeURIComponent(moment(this.prevSearch.dateEnd).utc().endOf('day').toISOString())}`);
       }
 
       let params = {
