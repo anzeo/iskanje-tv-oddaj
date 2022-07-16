@@ -27,7 +27,7 @@
                             @keyup.enter="search(true, 'query')"
                             style="border-left: 0; padding-left: 6px"></b-form-input>
             </b-input-group>
-            <div class="position-relative" style="max-width: 600px; margin-right: 43px; z-index: 5">
+            <div class="position-relative" style="max-width: 600px; margin-right: 43px; z-index: 10">
               <b-collapse id="filters" class="position-absolute w-100" @hidden="filtersVisible = false"
                           @show="filtersVisible = true">
                 <b-card id="filtersCard"
@@ -66,83 +66,118 @@
       </b-col>
     </b-row>
     <div class="container-fluid">
-      <b-row class="mt-3">
-        <b-col md="12" class="mb-4 d-flex align-items-center">
-          <h4 class="mb-0">Rezultati iskanja</h4>
-          <small class="ms-3" v-if="ctx.count">({{ ctx.count }} rezultatov)</small>
+      <b-row class="mx-0 mt-3">
+        <b-col md="12" class="mb-2">
+          <h4>Filtri</h4>
         </b-col>
-        <b-col v-if="!ctx.count">
-          <p>Ni rezultatov za prikaz...</p>
-        </b-col>
-        <b-col v-else v-for="item in items" :key="'item_' + item._id" class="mb-3" md="3" sm="4">
-          <div>
-            <div class="imageContainer position-relative" :key="'image_' + item._id" @click.prevent="showVideo(item)">
-              <div class="playIcon">
-                <vue-feather type="play-circle" size="28"></vue-feather>
-              </div>
-              <img :src="item._source.metadata.thumbnail || '../assets/images/thumbnail-unavailable.png'"
-                   @error="onImageError"
-                   style="position: relative; width: 100%; height: auto; z-index: -1"/>
-              <div class="showDuration">
-                <vue-feather type="clock" size="13"></vue-feather>
-                <small>&nbsp;{{ formatLength(item._source.metadata.duration) }}</small>
-              </div>
-              <div class="matchedTranscriptsIndicator">
-                <div v-if="item._source.matchedSubtitles?.length" class="matchedSubtitlesIndicator">
-                  <vue-feather type="align-center" size="16"></vue-feather>
-                </div>
-                <div v-if="item._source.matchedSpeech?.length" class="matchedSpeechIndicator">
-                  <vue-feather type="mic" size="14"></vue-feather>
-                </div>
-              </div>
-            </div>
-            <small>
-              <p class="fw-bold mb-0">{{ item._source.metadata.showName }}</p>
-              <p class="fw-light fst-italic mb-0" style="margin-bottom: -2px !important;">{{
-                  item._source.metadata.title
-                }}</p>
-              <small class="text-end">{{ formatDate(item._source.metadata.broadcastDate) }}</small>
-
-            </small>
+        <b-col md="3" class="me-md-4 d-flex flex-column">
+          <span class="fw-bold">Dolžina <small>(min)</small></span>
+          <div class="d-flex align-items-center flex-grow-1" style="margin-left: 7px;">
+            <vue-slider v-model="searchFilters.duration" :min="0" :max="120" :enable-cross="false" :adsorb="true"
+                        style="flex: 1"
+                        :interval="10"
+                        :marks="true"
+                        :hide-label="true"
+                        :tooltip-formatter="val => val === 120 ? `${val}+` : val"
+                        @drag-end="search(false)">
+            </vue-slider>
           </div>
         </b-col>
+        <b-col md="3" class="me-md-4">
 
-        <b-pagination
-            v-if="ctx.count !== 0"
-            v-model="ctx.currentPage"
-            :total-rows="ctx.count > 10000 ? 10000 : ctx.count"
-            :per-page="ctx.perPage"
-            class="my-4"
-            align="center"
-            @update:modelValue="search(false)">
-        </b-pagination>
+          <span class="fw-bold">Datum predvajanja <small>(od)</small></span>
+          <DatePicker locale="sl" :enable-time-picker="false" :cancel-text="'Zapri'" :select-text="'Izberi'"
+                      :format="'dd. MM. yyyy'"
+                      v-model="searchFilters.dateStart" @update:modelValue="search(false)"></DatePicker>
+        </b-col>
+        <b-col md="3">
 
+          <span class="fw-bold">Datum predvajanja <small>(do)</small></span>
+          <DatePicker locale="sl" :enable-time-picker="false" :cancel-text="'Zapri'" :select-text="'Izberi'"
+                      :format="'dd. MM. yyyy'"
+                      v-model="searchFilters.dateEnd" @update:modelValue="search(false)"></DatePicker>
+        </b-col>
       </b-row>
+      <div class="">
+        <b-row class="mt-4 mx-0">
+          <b-col md="12" class="mb-4 d-flex align-items-center">
+            <h4 class="mb-0">Rezultati iskanja</h4>
+            <small class="ms-3" v-if="ctx.count">({{ ctx.count }} rezultatov)</small>
+          </b-col>
+          <b-col v-if="!ctx.count">
+            <p>Ni rezultatov za prikaz...</p>
+          </b-col>
+          <b-col v-else v-for="item in items" :key="'item_' + item._id" class="mb-3" md="3" sm="4">
+            <div>
+              <div class="imageContainer position-relative" :key="'image_' + item._id" @click.prevent="showVideo(item)">
+                <div class="playIcon">
+                  <vue-feather type="play-circle" size="28"></vue-feather>
+                </div>
+                <img :src="item._source.metadata.thumbnail || '../assets/images/thumbnail-unavailable.png'"
+                     @error="onImageError"
+                     style="position: relative; width: 100%; height: auto; z-index: -1"/>
+                <div class="showDuration">
+                  <vue-feather type="clock" size="13"></vue-feather>
+                  <small>&nbsp;{{ formatLength(item._source.metadata.duration) }}</small>
+                </div>
+                <div class="matchedTranscriptsIndicator">
+                  <div v-if="item._source.matchedSubtitles?.length" class="matchedSubtitlesIndicator">
+                    <vue-feather type="align-center" size="16"></vue-feather>
+                  </div>
+                  <div v-if="item._source.matchedSpeech?.length" class="matchedSpeechIndicator">
+                    <vue-feather type="mic" size="14"></vue-feather>
+                  </div>
+                </div>
+              </div>
+              <small>
+                <p class="fw-bold mb-0">{{ item._source.metadata.showName }}</p>
+                <p class="fw-light fst-italic mb-0" style="margin-bottom: -2px !important;">{{
+                    item._source.metadata.title
+                  }}</p>
+                <small class="text-end">{{ formatDate(item._source.metadata.broadcastDate) }}</small>
 
-      <b-modal id="searchInstructionsModal" title="Navodila za iskanje" ok-only>
-        <div>
-          <p class="mb-0">Iskanje deluje po poljih:</p>
-          <small>
-            <ul>
-              <li>Ime oddaje,</li>
-              <li>Naslov</li>
-              <li>Opis</li>
-              <li>Podnapisi</li>
-              <li>Govor</li>
-            </ul>
-          </small>
-          <p class="mb-0 fw-bold">Iskanje po vseh poljih (relacija ALI)</p>
-          <small><b>Primer vnosa: </b><em>iskalni niz</em></small>
-          <p class="mb-0 mt-3 fw-bold">Iskanje po željenih poljih (relacija IN)</p>
-          <small class="d-flex">Klik na ikono
-            <vue-feather type="sliders" size="13"
-                         style="color: rgb(160, 160, 160); transform: rotate(90deg)"></vue-feather>
-          </small>
-        </div>
-      </b-modal>
+              </small>
+            </div>
+          </b-col>
 
-      <TVShowModal ref="tvShowModal"></TVShowModal>
+          <b-pagination
+              v-if="ctx.count !== 0"
+              v-model="ctx.currentPage"
+              :total-rows="ctx.count > 10000 ? 10000 : ctx.count"
+              :per-page="ctx.perPage"
+              class="my-4"
+              align="center"
+              @update:modelValue="search(false)">
+          </b-pagination>
+
+        </b-row>
+
+        <b-modal id="searchInstructionsModal" title="Navodila za iskanje" ok-only>
+          <div>
+            <p class="mb-0">Iskanje deluje po poljih:</p>
+            <small>
+              <ul>
+                <li>Ime oddaje,</li>
+                <li>Naslov</li>
+                <li>Opis</li>
+                <li>Podnapisi</li>
+                <li>Govor</li>
+              </ul>
+            </small>
+            <p class="mb-0 fw-bold">Iskanje po vseh poljih (relacija ALI)</p>
+            <small><b>Primer vnosa: </b><em>iskalni niz</em></small>
+            <p class="mb-0 mt-3 fw-bold">Iskanje po željenih poljih (relacija IN)</p>
+            <small class="d-flex">Klik na ikono
+              <vue-feather type="sliders" size="13"
+                           style="color: rgb(160, 160, 160); transform: rotate(90deg)"></vue-feather>
+            </small>
+          </div>
+        </b-modal>
+
+        <TVShowModal ref="tvShowModal"></TVShowModal>
+      </div>
     </div>
+
   </div>
 
 </template>
@@ -167,12 +202,16 @@ export default {
     return {
       isLoading: false,
       searchFilters: {
+        searchType: "query",
         searchString: /*this.$route.query.searchString ? decodeURIComponent(this.$route.query.searchString) :*/ "",
         showName: /*this.$route.query.showName ? decodeURIComponent(this.$route.query.showName) :*/ "",
         title: /*this.$route.query.title ? decodeURIComponent(this.$route.query.title) :*/ "",
         description: /*this.$route.query.description ? decodeURIComponent(this.$route.query.description) :*/ "",
         subtitles: /*this.$route.query.subtitles ? decodeURIComponent(this.$route.query.subtitles) :*/ "",
-        speech: ""
+        speech: "",
+        duration: [0, 120],
+        dateStart: null,
+        dateEnd: null
       },
       prevSearch: {
         // searchString: this.$route.query.searchString ? decodeURIComponent(this.$route.query.searchString) : "",
@@ -197,7 +236,7 @@ export default {
   computed: {},
 
   mounted() {
-    this.search();
+    this.search(true, this.searchFilters.searchType);
   },
 
   methods: {
@@ -207,6 +246,10 @@ export default {
         this.prevSearch = {..._.clone(this.searchFilters)};
         this.prevSearch.searchType = searchType;
       }
+      this.prevSearch.duration = this.searchFilters.duration
+      this.prevSearch.dateStart = this.searchFilters.dateStart
+      this.prevSearch.dateEnd = this.searchFilters.dateEnd
+
       console.log(this.prevSearch)
       let query = {};
       let searchParams = [];
