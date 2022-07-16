@@ -66,36 +66,52 @@
       </b-col>
     </b-row>
     <div class="container-fluid">
-      <b-row class="mx-0 mt-3">
-        <b-col md="12" class="mb-2">
-          <h4>Filtri</h4>
-        </b-col>
-        <b-col md="3" class="me-md-4 d-flex flex-column">
-          <span class="fw-bold">Dolžina <small>(min)</small></span>
-          <div class="d-flex align-items-center flex-grow-1" style="margin-left: 7px;">
-            <vue-slider v-model="searchFilters.duration" :min="0" :max="120" :enable-cross="false" :adsorb="true"
-                        style="flex: 1"
-                        :interval="10"
-                        :marks="true"
-                        :hide-label="true"
-                        :tooltip-formatter="val => val === 120 ? `${val}+` : val"
-                        @drag-end="search(false)">
-            </vue-slider>
-          </div>
-        </b-col>
-        <b-col md="3" class="me-md-4">
-
-          <span class="fw-bold">Datum predvajanja <small>(od)</small></span>
-          <DatePicker locale="sl" :enable-time-picker="false" :cancel-text="'Zapri'" :select-text="'Izberi'"
-                      :format="'dd. MM. yyyy'"
-                      v-model="searchFilters.dateStart" @update:modelValue="search(false)"></DatePicker>
-        </b-col>
-        <b-col md="3">
-
-          <span class="fw-bold">Datum predvajanja <small>(do)</small></span>
-          <DatePicker locale="sl" :enable-time-picker="false" :cancel-text="'Zapri'" :select-text="'Izberi'"
-                      :format="'dd. MM. yyyy'"
-                      v-model="searchFilters.dateEnd" @update:modelValue="search(false)"></DatePicker>
+      <b-row class="mx-0 mt-3 filtersRow">
+        <b-col md="12">
+          <b-card no-body :header-class="{'border-bottom-0': !topFiltersVisible, 'p-0 dp__pointer': true}">
+            <template #header>
+              <div class="px-3 py-2 d-flex align-content-center" v-b-toggle.topFilters>
+                <span class="material-icons me-2" style="font-size: 18px">filter_alt</span>
+                <h6 class="m-0">Filtri</h6>
+              </div>
+            </template>
+            <b-collapse id="topFilters" ref="topFilters" visible @hidden="topFiltersVisible = false"
+                        @show="topFiltersVisible = true">
+              <b-row class="text-center justify-content-center p-3 pt-2">
+                <b-col md="3" class="me-md-4">
+                  <span class="small">Datum predvajanja <small>(od)</small></span>
+                  <DatePicker locale="sl" :enable-time-picker="false" :cancel-text="'Zapri'" :select-text="'Izberi'"
+                              class="dateFilter"
+                              :format="'dd. MM. yyyy'"
+                              v-model="searchFilters.dateStart"
+                              @update:modelValue="ctx.currentPage = 1; search(false)"></DatePicker>
+                </b-col>
+                <b-col md="3" class="me-md-4 mt-2 mt-md-0">
+                  <span class="small">Datum predvajanja <small>(do)</small></span>
+                  <DatePicker locale="sl" :enable-time-picker="false" :cancel-text="'Zapri'" :select-text="'Izberi'"
+                              class="dateFilter"
+                              :format="'dd. MM. yyyy'"
+                              v-model="searchFilters.dateEnd"
+                              @update:modelValue="ctx.currentPage = 1; search(false)"></DatePicker>
+                </b-col>
+                <b-col md="3" class="d-flex flex-column mt-2 mt-md-0">
+                  <span class="small">Dolžina <small>(min)</small></span>
+                  <div class="d-flex align-items-center flex-grow-1" style="margin-left: 7px; margin-right: 7px">
+                    <vue-slider v-model="searchFilters.duration" :min="0" :max="120" :enable-cross="false"
+                                :adsorb="true"
+                                style="flex: 1"
+                                :interval="10"
+                                :marks="true"
+                                :hide-label="true"
+                                :tooltip-formatter="val => val === 120 ? `${val}+` : val"
+                                @drag-end="ctx.currentPage = 1; search(false)"
+                                @click="ctx.currentPage = 1; search(false)">
+                    </vue-slider>
+                  </div>
+                </b-col>
+              </b-row>
+            </b-collapse>
+          </b-card>
         </b-col>
       </b-row>
       <div class="">
@@ -228,6 +244,7 @@ export default {
         count: 0
       },
       filtersVisible: false,
+      topFiltersVisible: true
     }
   },
 
@@ -257,8 +274,20 @@ export default {
       query['searchType'] = this.prevSearch.searchType;
 
       if (this.prevSearch.searchType === 'query') {
-        query['searchString'] = encodeURIComponent(this.prevSearch.searchString)
+        query['searchString'] = encodeURIComponent(this.prevSearch.searchString);
+        query['duration'] = encodeURIComponent(JSON.stringify(this.prevSearch.duration));
         searchParams.push(`searchQuery=${encodeURIComponent(this.prevSearch.searchString)}`);
+        searchParams.push(`durationMin=${encodeURIComponent(this.prevSearch.duration[0])}`);
+        searchParams.push(`durationMax=${encodeURIComponent(this.prevSearch.duration[1])}`);
+        if (this.prevSearch.dateStart) {
+          query['dateStart'] = encodeURIComponent(this.prevSearch.dateStart)
+          searchParams.push(`dateStart=${encodeURIComponent(moment(this.prevSearch.dateStart).utc().startOf('day').toISOString())}`);
+        }
+        if (this.prevSearch.dateEnd) {
+          query['dateEnd'] = encodeURIComponent(this.prevSearch.dateEnd)
+          searchParams.push(`dateEnd=${encodeURIComponent(moment(this.prevSearch.dateEnd).utc().endOf('day').toISOString())}`);
+
+        }
       } else {
         searchParams = Object.keys(this.prevSearch).filter(name => this.prevSearch[name] !== null && name !== 'searchString' && name !== 'searchType').map(name => {
           query[name] = encodeURIComponent(this.prevSearch[name]);
