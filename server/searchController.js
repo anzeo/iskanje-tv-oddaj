@@ -12,45 +12,86 @@ router.get('/search', (req, res) => {
     if (req.query.searchQuery || req.query.searchQuery === '') {
         if (req.query.searchQuery === '') {
             query = {
-                match_all: {}
+                bool: {
+                    must: [
+                        {
+                            range: {
+                                "metadata.duration": {
+                                    gte: req.query.durationMin * 60,
+                                    ...(parseInt(req.query.durationMax) !== 120 ? {lte: req.query.durationMax * 60} : {})
+                                }
+                            }
+                        },
+                        {
+                            range: {
+                                "metadata.broadcastDate": {
+                                    ...(req.query.dateStart ? {gte: req.query.dateStart} : {}),
+                                    ...(req.query.dateEnd ? {lte: req.query.dateEnd} : {})
+                                }
+                            }
+                        }
+                    ]
+                }
             }
         } else {
             query = {
                 bool: {
-                    should: [
+                    must: [
                         {
-                            match_phrase: {
-                                "metadata.showName": escapeSpecialChars(req.query.searchQuery)
-                            }
-                        },
-                        {
-                            match_phrase: {
-                                "metadata.title": escapeSpecialChars(req.query.searchQuery)
-                            }
-                        },
-                        {
-                            match_phrase: {
-                                "metadata.description": escapeSpecialChars(req.query.searchQuery)
-                            }
-                        },
-                        {
-                            nested: {
-                                path: "subtitles",
-                                query: {
-                                    match_phrase: {
-                                        "subtitles.text": escapeSpecialChars(req.query.searchQuery)
-                                    }
+                            range: {
+                                "metadata.duration": {
+                                    gte: req.query.durationMin * 60,
+                                    ...(parseInt(req.query.durationMax) !== 120 ? {lte: req.query.durationMax * 60} : {})
                                 }
                             }
                         },
                         {
-                            nested: {
-                                path: "speech",
-                                query: {
-                                    match_phrase: {
-                                        "speech.text": escapeSpecialChars(req.query.searchQuery)
-                                    }
+                            range: {
+                                "metadata.broadcastDate": {
+                                    ...(req.query.dateStart ? {gte: req.query.dateStart} : {}),
+                                    ...(req.query.dateEnd ? {lte: req.query.dateEnd} : {})
                                 }
+                            }
+                        },
+                        {
+                            bool: {
+                                should: [
+                                    {
+                                        match_phrase: {
+                                            "metadata.showName": escapeSpecialChars(req.query.searchQuery)
+                                        }
+                                    },
+                                    {
+                                        match_phrase: {
+                                            "metadata.title": escapeSpecialChars(req.query.searchQuery)
+                                        }
+                                    },
+                                    {
+                                        match_phrase: {
+                                            "metadata.description": escapeSpecialChars(req.query.searchQuery)
+                                        }
+                                    },
+                                    {
+                                        nested: {
+                                            path: "subtitles",
+                                            query: {
+                                                match_phrase: {
+                                                    "subtitles.text": escapeSpecialChars(req.query.searchQuery)
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {
+                                        nested: {
+                                            path: "speech",
+                                            query: {
+                                                match_phrase: {
+                                                    "speech.text": escapeSpecialChars(req.query.searchQuery)
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
                             }
                         }
                     ]
@@ -95,7 +136,23 @@ router.get('/search', (req, res) => {
                                 }
                             }
                         }
-                    }] : []
+                    }] : [],
+                    {
+                        range: {
+                            "metadata.duration": {
+                                gte: req.query.durationMin * 60,
+                                ...(parseInt(req.query.durationMax) !== 120 ? {lte: req.query.durationMax * 60} : {})
+                            }
+                        }
+                    },
+                    {
+                        range: {
+                            "metadata.broadcastDate": {
+                                ...(req.query.dateStart ? {gte: req.query.dateStart} : {}),
+                                ...(req.query.dateEnd ? {lte: req.query.dateEnd} : {})
+                            }
+                        }
+                    }
                 ]
             }
         }
@@ -177,7 +234,8 @@ async function getSubtitles(id, text) {
         sort: [
             {
                 start: {
-                    order: "asc"
+                    order: "asc",
+                    unmapped_type: "float"
                 }
             }
         ]
@@ -241,7 +299,8 @@ async function getSpeech(id, text) {
         sort: [
             {
                 start: {
-                    order: "asc"
+                    order: "asc",
+                    unmapped_type: "float"
                 }
             }
         ]

@@ -19,7 +19,8 @@ router.delete('/duplicateSubtitles', (req, res) => {
 
     client.deleteByQuery({
         index: 'rtv-oddaje-podnapisi-standard',
-        body
+        body,
+        refresh: true
     }).then(resp => {
         res.status(200).send(resp)
     }).catch(err => {
@@ -47,7 +48,8 @@ router.delete('/duplicateSpeech', (req, res) => {
 
     client.deleteByQuery({
         index: 'rtv-oddaje-govor-standard',
-        body
+        body,
+        refresh: true
     }).then(resp => {
         res.status(200).send(resp)
     }).catch(err => {
