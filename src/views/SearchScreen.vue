@@ -1,12 +1,12 @@
 <template>
-  <div>
+  <div class="d-flex flex-column" style="min-height: 100%; background-color: #f6f6f6">
     <loading :active="isLoading" :can-cancel="false" loader="bars"></loading>
     <b-row class="m-0 searchBar-row">
       <b-col md="10" class="mx-auto">
         <div class="d-flex">
           <vue-feather
               type="help-circle" size="18"
-              class="me-2 align-self-center link-secondary" style="cursor: pointer"
+              class="instructions-link"
               @click="$bvModal.show('searchInstructionsModal')"></vue-feather>
           <div class="w-100">
             <b-input-group>
@@ -66,9 +66,9 @@
       </b-col>
     </b-row>
     <div class="container-fluid">
-      <b-row class="mx-0 mt-3 filtersRow">
+      <b-row class="mx-0 filtersRow">
         <b-col md="12">
-          <b-card no-body :header-class="{'border-bottom-0': !topFiltersVisible, 'p-0 dp__pointer': true}">
+          <b-card no-body :header-class="{'border-bottom-0': !topFiltersVisible, 'filtersHeader': true}">
             <template #header>
               <div class="px-3 py-2 d-flex align-content-center" v-b-toggle.topFilters>
                 <span class="material-icons me-2" style="font-size: 18px">filter_alt</span>
@@ -76,7 +76,7 @@
               </div>
             </template>
             <b-collapse id="topFilters" ref="topFilters" visible @hidden="topFiltersVisible = false"
-                        @show="topFiltersVisible = true">
+                        @show="topFiltersVisible = true" style="background-color: #efefef">
               <b-row class="text-center justify-content-center p-3 pt-2">
                 <b-col md="3" class="me-md-4">
                   <span class="small">Datum predvajanja <small>(od)</small></span>
