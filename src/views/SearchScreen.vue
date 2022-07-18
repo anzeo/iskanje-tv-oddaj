@@ -267,7 +267,6 @@ export default {
       this.prevSearch.dateStart = this.searchFilters.dateStart
       this.prevSearch.dateEnd = this.searchFilters.dateEnd
 
-      console.log(this.prevSearch)
       let query = {};
       let searchParams = [];
 

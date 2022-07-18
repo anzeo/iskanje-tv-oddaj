@@ -79,7 +79,7 @@
             </b-tab>
             <b-tab no-body>
               <div class="searchSubtitlesRow" v-if="show.subtitles?.length">
-                <b-form-input style="height: 30px; width: 300px" placeholder="Išči po podnapisih"
+                <b-form-input style="height: 30px; width: 300px" placeholder="Išči po podnapisih" v-model="subtitleSearch"
                               @input="e => {subtitleSearch = e; $nextTick(() => {jumpDown('subtitles')})}">
                 </b-form-input>
                 <b-input-group-append>
@@ -114,7 +114,7 @@
             </b-tab>
             <b-tab no-body>
               <div class="searchSpeechRow" v-if="show.speech?.length">
-                <b-form-input style="height: 30px; width: 300px" placeholder="Išči po govoru"
+                <b-form-input style="height: 30px; width: 300px" placeholder="Išči po govoru" v-model="speechSearch"
                               @input="e => {speechSearch = e; $nextTick(() => {jumpDown('speech')})}"></b-form-input>
                 <b-input-group-append>
                   <div class="d-flex ms-1 user-select-none">
