@@ -68,15 +68,21 @@
     <div class="container-fluid">
       <b-row class="mx-0 filtersRow">
         <b-col md="12">
-          <b-card no-body :header-class="{'border-bottom-0': !topFiltersVisible, 'filtersHeader': true}">
+          <b-card no-body :header-class="{'border-bottom-0': !headerBorder, 'filtersHeader': true}">
             <template #header>
-              <div class="px-3 py-2 d-flex align-content-center" v-b-toggle.topFilters>
-                <span class="material-icons me-2" style="font-size: 18px">filter_alt</span>
-                <h6 class="m-0">Filtri</h6>
+              <div class="px-3 py-2 d-flex align-content-center" @click="toggleTopFilters">
+                <div class="d-flex align-items-center">
+                  <vue-feather type="filter" size="16" class="me-2" style="margin-bottom: 2px"></vue-feather>
+                  <h6 class="m-0">Filtri</h6>
+                </div>
+                <div class="ms-auto d-flex">
+                  <b-badge variant="primary" class="clearTopFilters" @click.stop="clearTopFilters">Ponastavi filtre
+                  </b-badge>
+                </div>
               </div>
             </template>
-            <b-collapse id="topFilters" ref="topFilters" visible @hidden="topFiltersVisible = false"
-                        @show="topFiltersVisible = true" style="background-color: #efefef">
+            <b-collapse id="topFilters" ref="topFilters" :visible="topFiltersVisible" @hidden="headerBorder = false"
+                        @show="headerBorder = true" style="background-color: #efefef">
               <b-row class="text-center justify-content-center p-3 pt-2">
                 <b-col md="3" class="me-md-4">
                   <span class="small">Datum predvajanja <small>(od)</small></span>
@@ -161,7 +167,7 @@
               v-model="ctx.currentPage"
               :total-rows="ctx.count > 9996 ? 9996 : ctx.count"
               :per-page="ctx.perPage"
-              class="my-4"
+              class="my-4 p-0"
               align="center"
               @update:modelValue="search(false)">
           </b-pagination>
@@ -244,7 +250,8 @@ export default {
         count: 0
       },
       filtersVisible: false,
-      topFiltersVisible: true
+      topFiltersVisible: true,
+      headerBorder: true
     }
   },
 
@@ -358,6 +365,19 @@ export default {
     rotateIcon(e) {
       document.querySelector('.filterIcon i').classList.toggle('down')
       console.log(e)
+    },
+
+    clearTopFilters(e) {
+      console.log("reset", e)
+      this.searchFilters.dateStart = null;
+      this.searchFilters.dateEnd = null;
+      this.searchFilters.duration = [0, 120];
+      this.ctx.currentPage = 1;
+      this.search(false)
+    },
+
+    toggleTopFilters() {
+      this.topFiltersVisible = !this.topFiltersVisible
     }
   }
 }

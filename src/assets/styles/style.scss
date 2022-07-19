@@ -98,10 +98,20 @@ html {
     padding: 0;
     cursor: pointer;
     transition: 0.3s background-color;
+    user-select: none;
   }
 
   .filtersHeader:hover {
     background-color: rgba(0, 0, 0, 0.06);
+  }
+
+  .clearTopFilters {
+    user-select: none;
+    transition: .3s;
+  }
+  .clearTopFilters:hover {
+    transform: scale(1.01);
+    box-shadow: 0 0 2px 2px rgba(13, 110, 253, 0.2);
   }
 
   .dateFilter {
