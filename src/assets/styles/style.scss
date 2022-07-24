@@ -364,6 +364,12 @@ html {
   }
 }
 
+@media only screen and (max-width: 810px){
+  #videoModal .modal-dialog {
+    margin: 1.75rem .5rem;
+  }
+}
+
 @media only screen and (max-width: 656px){
   #videoModal .matchedTranscriptsContainer {
     min-width: auto;
