@@ -124,7 +124,7 @@
         <b-row class="mt-4 mx-0">
           <b-col md="12" class="mb-4 d-flex align-items-center">
             <h4 class="mb-0">Rezultati iskanja</h4>
-            <small class="ms-3" v-if="ctx.count">({{ ctx.count }} rezultatov)</small>
+<!--            <small class="ms-3" v-if="ctx.count">({{ ctx.count }} rezultatov)</small>-->
           </b-col>
           <b-col v-if="!ctx.count">
             <p>Ni rezultatov za prikaz...</p>

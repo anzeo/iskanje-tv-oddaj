@@ -4,7 +4,7 @@
            hide-footer>
     <div v-if="show">
       <Loading :active="isLoading" :can-cancel="false" :is-full-page="false" loader="bars"></Loading>
-      <div class="d-lg-flex">
+      <div class="d-flex">
         <div class="d-flex flex-column w-100">
           <vue3-video-player
               ref="videoPlayer"
@@ -79,7 +79,7 @@
             </b-tab>
             <b-tab no-body>
               <div class="searchSubtitlesRow" v-if="show.subtitles?.length">
-                <b-form-input style="height: 30px; width: 300px" placeholder="Išči po podnapisih" v-model="subtitleSearch"
+                <b-form-input style="height: 30px; max-width: 300px" placeholder="Išči po podnapisih" v-model="subtitleSearch"
                               @input="e => {subtitleSearch = e; $nextTick(() => {jumpDown('subtitles')})}">
                 </b-form-input>
                 <b-input-group-append>
@@ -94,8 +94,8 @@
 
                   </div>
                 </b-input-group-append>
-                <div class="align-self-center ms-auto">
-                  <b-form-checkbox v-model="trackSubtitles" switch><small>Sledi podnapisom</small></b-form-checkbox>
+                <div class="align-self-center ms-auto ps-2">
+                  <b-form-checkbox v-model="trackSubtitles" switch><small style="white-space: nowrap">Sledi podnapisom</small></b-form-checkbox>
                 </div>
               </div>
               <div class="allSubtitlesContainer"
@@ -114,7 +114,7 @@
             </b-tab>
             <b-tab no-body>
               <div class="searchSpeechRow" v-if="show.speech?.length">
-                <b-form-input style="height: 30px; width: 300px" placeholder="Išči po govoru" v-model="speechSearch"
+                <b-form-input style="height: 30px; max-width: 300px" placeholder="Išči po govoru" v-model="speechSearch"
                               @input="e => {speechSearch = e; $nextTick(() => {jumpDown('speech')})}"></b-form-input>
                 <b-input-group-append>
                   <div class="d-flex ms-1 user-select-none">
@@ -128,8 +128,8 @@
 
                   </div>
                 </b-input-group-append>
-                <div class="align-self-center ms-auto">
-                  <b-form-checkbox v-model="trackSpeech" switch><small>Sledi govoru</small></b-form-checkbox>
+                <div class="align-self-center ms-auto ps-2">
+                  <b-form-checkbox v-model="trackSpeech" switch><small style="white-space: nowrap">Sledi govoru</small></b-form-checkbox>
                 </div>
               </div>
               <div class="allSpeechContainer"
@@ -158,9 +158,12 @@
                     {{ formatOffsetTime(subtitle._source.start) }} - {{ subtitle._source.text }}
                   </span>
               </div>
+              <div v-if="!show.matchedSubtitles.length">
+                <span style="font-style: italic">Ni rezultatov za prikaz</span>
+              </div>
             </div>
           </div>
-          <div class="matchedSubtitlesHeader">Ujemajoč govor</div>
+          <div class="matchedSubtitlesHeader mt-3">Ujemajoč govor</div>
           <div style="flex: 1; position: relative">
             <div class="matchedSubtitlesContainer">
               <div v-for="(text, index) in show.matchedSpeech" :key="'speech_' + index"
@@ -168,6 +171,9 @@
                   <span>
                     {{ formatOffsetTime(text._source.start) }} - {{ text._source.text }}
                   </span>
+              </div>
+              <div v-if="!show.matchedSpeech.length">
+                <span style="font-style: italic">Ni rezultatov za prikaz</span>
               </div>
             </div>
           </div>

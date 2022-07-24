@@ -263,6 +263,7 @@ html {
   padding: 10px 15px;
   background: rgb(26 26 26);
   display: flex;
+  align-items: center;
 }
 
 .allSubtitlesContainer {
@@ -329,7 +330,7 @@ html {
   min-width: 300px;
   background: #1f1f1f;
   border-bottom-right-radius: 0.3rem;
-
+  min-height: 500px;
 
   .matchedSubtitlesHeader {
     font-weight: bold;
@@ -356,3 +357,16 @@ html {
     color: #e0a56c;
   }
 }
+
+@media only screen and (max-width: 992px){
+  #videoModal .modal-dialog {
+    max-width: 800px;
+  }
+}
+
+@media only screen and (max-width: 656px){
+  #videoModal .matchedTranscriptsContainer {
+    min-width: auto;
+  }
+}
+
