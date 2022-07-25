@@ -107,10 +107,9 @@ html {
 
   .clearTopFilters {
     user-select: none;
-    transition: .3s;
+    transition: box-shadow 0.3s;
   }
   .clearTopFilters:hover {
-    transform: scale(1.01);
     box-shadow: 0 0 2px 2px rgba(13, 110, 253, 0.2);
   }
 

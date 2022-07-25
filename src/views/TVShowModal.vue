@@ -95,7 +95,7 @@
                   </div>
                 </b-input-group-append>
                 <div class="align-self-center ms-auto ps-2">
-                  <b-form-checkbox v-model="trackSubtitles" switch><small style="white-space: nowrap">Sledi podnapisom</small></b-form-checkbox>
+                  <b-form-checkbox style="cursor: pointer" v-model="trackSubtitles" switch><small style="white-space: nowrap">Sledi podnapisom</small></b-form-checkbox>
                 </div>
               </div>
               <div class="allSubtitlesContainer"
@@ -129,7 +129,7 @@
                   </div>
                 </b-input-group-append>
                 <div class="align-self-center ms-auto ps-2">
-                  <b-form-checkbox v-model="trackSpeech" switch><small style="white-space: nowrap">Sledi govoru</small></b-form-checkbox>
+                  <b-form-checkbox style="cursor: pointer" v-model="trackSpeech" switch><small style="white-space: nowrap">Sledi govoru</small></b-form-checkbox>
                 </div>
               </div>
               <div class="allSpeechContainer"

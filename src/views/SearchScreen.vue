@@ -169,6 +169,7 @@
               :per-page="ctx.perPage"
               class="my-4 p-0"
               align="center"
+              limit="7"
               @update:modelValue="search(false)">
           </b-pagination>
 
@@ -362,9 +363,8 @@ export default {
       e.target.src = require("../assets/images/thumbnail-unavailable.png")
     },
 
-    rotateIcon(e) {
+    rotateIcon() {
       document.querySelector('.filterIcon i').classList.toggle('down')
-      console.log(e)
     },
 
     clearTopFilters(e) {
