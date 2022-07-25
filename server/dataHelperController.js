@@ -39,7 +39,7 @@ router.post('/duplicateSubtitles', async (req, res) => {
         }
         res.status(200).send(resps)
     } catch (e) {
-        console.error(e, new Date())
+        console.error(e)
         res.status(500).send(e);
     }
     // await client.deleteByQuery({
@@ -50,10 +50,10 @@ router.post('/duplicateSubtitles', async (req, res) => {
     //     slices: "auto",
     //     timeout: "10h"
     // }).then(resp => {
-    //     console.log(resp, new Date())
+    //     console.log(resp)
     //     res.status(200).send(resp)
     // }).catch(err => {
-    //     console.error(err, new Date())
+    //     console.error(err)
     //     res.status(500).send(err);
     // })
 })
@@ -94,7 +94,7 @@ router.post('/duplicateSpeech', async (req, res) => {
         }
         res.status(200).send(resps)
     } catch (e) {
-        console.error(e, new Date())
+        console.error(e)
         res.status(500).send(e);
     }
 
