@@ -20,7 +20,8 @@ const client = new Client({
     tls: {
         ca: fs.readFileSync('./certs/http_ca.crt'),
         rejectUnauthorized: true
-    }
+    },
+    requestTimeout: 600000
 })
 
 //https server
