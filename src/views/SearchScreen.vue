@@ -169,7 +169,7 @@
               :per-page="ctx.perPage"
               class="my-4 p-0"
               align="center"
-              limit="7"
+              :limit="7"
               @update:modelValue="search(false)">
           </b-pagination>
 

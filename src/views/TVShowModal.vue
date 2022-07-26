@@ -400,7 +400,8 @@ export default {
 
     moveToTimestamp(time) {
       console.log(time)
-      this.players['videoPlayer'].$video.currentTime = time;
+      if (this.players['videoPlayer']?.$video)
+        this.players['videoPlayer'].$video.currentTime = time;
     },
 
     closeVideo(id) {
