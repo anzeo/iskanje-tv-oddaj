@@ -52,6 +52,7 @@ html {
     -webkit-transition: all .25s linear;
     transition: all .25s linear;
   }
+
   i:hover {
     color: rgb(189, 189, 189) !important;
   }
@@ -109,6 +110,7 @@ html {
     user-select: none;
     transition: box-shadow 0.3s;
   }
+
   .clearTopFilters:hover {
     box-shadow: 0 0 2px 2px rgba(13, 110, 253, 0.2);
   }
@@ -357,19 +359,19 @@ html {
   }
 }
 
-@media only screen and (max-width: 992px){
+@media only screen and (max-width: 992px) {
   #videoModal .modal-dialog {
     max-width: 800px;
   }
 }
 
-@media only screen and (max-width: 810px){
+@media only screen and (max-width: 810px) {
   #videoModal .modal-dialog {
     margin: 1.75rem .5rem;
   }
 }
 
-@media only screen and (max-width: 656px){
+@media only screen and (max-width: 656px) {
   #videoModal .matchedTranscriptsContainer {
     min-width: auto;
   }

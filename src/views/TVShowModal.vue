@@ -414,11 +414,13 @@ export default {
     },
 
     rewindVideo() {
-      this.players['videoPlayer'].$video.currentTime -= 10
+      if (this.players['videoPlayer']?.$video)
+        this.players['videoPlayer'].$video.currentTime -= 10
     },
 
     forwardVideo() {
-      this.players['videoPlayer'].$video.currentTime += 10
+      if (this.players['videoPlayer']?.$video)
+        this.players['videoPlayer'].$video.currentTime += 10
     },
 
     searchSubtitle(e) {

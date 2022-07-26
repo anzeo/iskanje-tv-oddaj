@@ -17,7 +17,7 @@
               </template>
               <template #prepend>
                 <div class="filterIcon" style="border-top-left-radius: 0.25rem;"
-                     :style="[!filtersVisible ? 'border-bottom-left-radius: 0.25rem': '']"
+                     :style="[!filtersVisible ? 'border-bottom-left-radius: 0.25rem': '', advancedSearch ? 'background: #efefef' : '']"
                      v-b-toggle.filters @click="rotateIcon">
                   <vue-feather type="sliders" size="18"
                                style="color: rgb(160, 160, 160); transform: rotate(90deg)"></vue-feather>
@@ -124,7 +124,7 @@
         <b-row class="mt-4 mx-0">
           <b-col md="12" class="mb-4 d-flex align-items-center">
             <h4 class="mb-0">Rezultati iskanja</h4>
-<!--            <small class="ms-3" v-if="ctx.count">({{ ctx.count }} rezultatov)</small>-->
+            <!--            <small class="ms-3" v-if="ctx.count">({{ ctx.count }} rezultatov)</small>-->
           </b-col>
           <b-col v-if="!ctx.count">
             <p>Ni rezultatov za prikaz...</p>
@@ -258,7 +258,11 @@ export default {
 
   watch: {},
 
-  computed: {},
+  computed: {
+    advancedSearch() {
+      return this.prevSearch.searchType === "filters" && (this.prevSearch.showName || this.prevSearch.title || this.prevSearch.description || this.prevSearch.subtitles || this.prevSearch.speech)
+    }
+  },
 
   mounted() {
     this.search(true, this.searchFilters.searchType);
