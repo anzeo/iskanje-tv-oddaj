@@ -385,7 +385,7 @@ export default {
     },
 
     formatDate(date) {
-      return moment(date).format('DD. MM. YYYY');
+      return moment(date).format('DD. MM. YYYY [ob] HH:mm');
     },
 
     formatLength(time) {
@@ -463,7 +463,7 @@ export default {
 
         let parent = document.querySelector('.allSubtitlesContainer')
         let target = parent.querySelectorAll('mark')[this.visitedSubtitleNo - 1]
-        target.style.background = 'red'
+        target.style.background = 'yellow'
         parent.scrollTop = target.offsetTop - parent.offsetTop - 40
       } else if (transcriptType === 'speech') {
         if (!this.allFoundSpeechLen)
@@ -478,7 +478,7 @@ export default {
 
         let parent = document.querySelector('.allSpeechContainer')
         let target = parent.querySelectorAll('mark')[this.visitedSpeechNo - 1]
-        target.style.background = 'red'
+        target.style.background = 'yellow'
         parent.scrollTop = target.offsetTop - parent.offsetTop - 40
       }
 
@@ -498,7 +498,7 @@ export default {
 
         let parent = document.querySelector('.allSubtitlesContainer')
         let target = parent.querySelectorAll('mark')[this.visitedSubtitleNo - 1]
-        target.style.background = 'red'
+        target.style.background = 'yellow'
         parent.scrollTop = target.offsetTop - parent.offsetTop - 40
       } else if (transcriptType === 'speech') {
         if (!this.allFoundSpeechLen)
@@ -513,7 +513,7 @@ export default {
 
         let parent = document.querySelector('.allSpeechContainer')
         let target = parent.querySelectorAll('mark')[this.visitedSpeechNo - 1]
-        target.style.background = 'red'
+        target.style.background = 'yellow'
         parent.scrollTop = target.offsetTop - parent.offsetTop - 40
       }
     }
