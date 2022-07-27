@@ -186,6 +186,8 @@ router.get('/search', (req, res) => {
             if ((req.query.searchQuery && req.query.searchQuery !== '') || (req.query.subtitles && req.query.subtitles !== '') || (req.query.speech && req.query.speech !== ''))
                 for (const entry of resp.hits.hits) {
                     let tmp = entry
+                    tmp._source.matchedSubtitles = []
+                    tmp._source.matchedSpeech = []
                     if ((req.query.searchQuery && req.query.searchQuery !== '') || (req.query.subtitles && req.query.subtitles !== ''))
                         await getSubtitles(entry._source.metadata.id, req.query.searchQuery || req.query.subtitles).then(val => {
                             tmp._source.matchedSubtitles = val
@@ -243,14 +245,20 @@ async function getSubtitles(id, text) {
 
     const respQueue = []
     let subtitles = []
+    let scroll_ids = []
     try {
         const resp = await client.search(body)
-        if (resp.hits.total.value <= 500)
+        if (resp.hits.total.value <= 500) {
+            await client.clearScroll({scroll_id: resp._scroll_id})
             return resp.hits.hits
+        }
         respQueue.push(resp)
 
         while (respQueue.length) {
             const body = respQueue.shift()
+            if (scroll_ids.indexOf(body._scroll_id) === -1) {
+                scroll_ids.push(body._scroll_id)
+            }
 
             body.hits.hits.forEach(hit => {
                 subtitles.push(hit)
@@ -264,6 +272,8 @@ async function getSubtitles(id, text) {
                 scroll: '1m'
             }))
         }
+        if (scroll_ids.length)
+            await client.clearScroll({scroll_id: scroll_ids})
         return subtitles
     } catch (e) {
         console.error(e)
@@ -308,14 +318,20 @@ async function getSpeech(id, text) {
 
     const respQueue = []
     let speech = []
+    let scroll_ids = []
     try {
         const resp = await client.search(body)
-        if (resp.hits.total.value <= 500)
+        if (resp.hits.total.value <= 500) {
+            await client.clearScroll({scroll_id: resp._scroll_id})
             return resp.hits.hits
+        }
         respQueue.push(resp)
 
         while (respQueue.length) {
             const body = respQueue.shift()
+            if (scroll_ids.indexOf(body._scroll_id) === -1) {
+                scroll_ids.push(body._scroll_id)
+            }
 
             body.hits.hits.forEach(hit => {
                 speech.push(hit)
@@ -329,6 +345,8 @@ async function getSpeech(id, text) {
                 scroll: '1m'
             }))
         }
+        if (scroll_ids.length)
+            await client.clearScroll({scroll_id: scroll_ids})
         return speech
     } catch (e) {
         console.error(e)
