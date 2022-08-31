@@ -57,26 +57,50 @@ router.get('/search', (req, res) => {
                             bool: {
                                 should: [
                                     {
-                                        match_phrase: {
-                                            "metadata.showName": escapeSpecialChars(req.query.searchQuery)
+                                        bool: {
+                                            must: req.query.searchQuery?.split(',')?.map(subquery => {
+                                                return {
+                                                    match_phrase: {
+                                                        "metadata.showName": escapeSpecialChars(subquery)
+                                                    }
+                                                }
+                                            }) || []
                                         }
                                     },
                                     {
-                                        match_phrase: {
-                                            "metadata.title": escapeSpecialChars(req.query.searchQuery)
+                                        bool: {
+                                            must: req.query.searchQuery?.split(',')?.map(subquery => {
+                                                return {
+                                                    match_phrase: {
+                                                        "metadata.title": escapeSpecialChars(subquery)
+                                                    }
+                                                }
+                                            }) || []
                                         }
                                     },
                                     {
-                                        match_phrase: {
-                                            "metadata.description": escapeSpecialChars(req.query.searchQuery)
+                                        bool: {
+                                            must: req.query.searchQuery?.split(',')?.map(subquery => {
+                                                return {
+                                                    match_phrase: {
+                                                        "metadata.description": escapeSpecialChars(subquery)
+                                                    }
+                                                }
+                                            }) || []
                                         }
                                     },
                                     {
                                         nested: {
                                             path: "subtitles",
                                             query: {
-                                                match_phrase: {
-                                                    "subtitles.text": escapeSpecialChars(req.query.searchQuery)
+                                                bool: {
+                                                    must: req.query.searchQuery?.split(',')?.map(subquery => {
+                                                        return {
+                                                            match_phrase: {
+                                                                "subtitles.text": escapeSpecialChars(subquery)
+                                                            }
+                                                        }
+                                                    }) || []
                                                 }
                                             }
                                         }
@@ -85,8 +109,14 @@ router.get('/search', (req, res) => {
                                         nested: {
                                             path: "speech",
                                             query: {
-                                                match_phrase: {
-                                                    "speech.text": escapeSpecialChars(req.query.searchQuery)
+                                                bool: {
+                                                    must: req.query.searchQuery?.split(',')?.map(subquery => {
+                                                        return {
+                                                            match_phrase: {
+                                                                "speech.text": escapeSpecialChars(subquery)
+                                                            }
+                                                        }
+                                                    }) || []
                                                 }
                                             }
                                         }
@@ -102,27 +132,39 @@ router.get('/search', (req, res) => {
         query = {
             bool: {
                 must: [
-                    ...req.query.showName ? [{
-                        match_phrase: {
-                            "metadata.showName": escapeSpecialChars(req.query.showName)
+                    ...req.query.showName ? req.query.showName.split(',')?.map(subquery => {
+                        return {
+                            match_phrase: {
+                                "metadata.showName": escapeSpecialChars(subquery)
+                            }
                         }
-                    }] : [],
-                    ...req.query.title ? [{
-                        match_phrase: {
-                            "metadata.title": escapeSpecialChars(req.query.title)
+                    }) || [] : [],
+                    ...req.query.title ? req.query.title.split(',')?.map(subquery => {
+                        return {
+                            match_phrase: {
+                                "metadata.title": escapeSpecialChars(subquery)
+                            }
                         }
-                    }] : [],
-                    ...req.query.description ? [{
-                        match_phrase: {
-                            "metadata.description": escapeSpecialChars(req.query.description)
+                    }) || [] : [],
+                    ...req.query.description ? req.query.description.split(',')?.map(subquery => {
+                        return {
+                            match_phrase: {
+                                "metadata.description": escapeSpecialChars(subquery)
+                            }
                         }
-                    }] : [],
+                    }) || [] : [],
                     ...req.query.subtitles ? [{
                         nested: {
                             path: "subtitles",
                             query: {
-                                match_phrase: {
-                                    "subtitles.text": escapeSpecialChars(req.query.subtitles)
+                                bool: {
+                                    must: req.query.subtitles.split(',')?.map(subquery => {
+                                        return {
+                                            match_phrase: {
+                                                "subtitles.text": escapeSpecialChars(subquery)
+                                            }
+                                        }
+                                    }) || []
                                 }
                             }
                         }
@@ -131,8 +173,14 @@ router.get('/search', (req, res) => {
                         nested: {
                             path: "speech",
                             query: {
-                                match_phrase: {
-                                    "speech.text": escapeSpecialChars(req.query.speech)
+                                bool: {
+                                    must: req.query.speech.split(',')?.map(subquery => {
+                                        return {
+                                            match_phrase: {
+                                                "speech.text": escapeSpecialChars(subquery)
+                                            }
+                                        }
+                                    }) || []
                                 }
                             }
                         }
@@ -219,11 +267,13 @@ async function getSubtitles(id, text) {
                         }
                     }
                 },
-                {
-                    match_phrase: {
-                        "text": escapeSpecialChars(text)
+                ...text.split(',')?.map(subquery => {
+                    return {
+                        match_phrase: {
+                            "text": escapeSpecialChars(subquery)
+                        }
                     }
-                }
+                }) || []
             ]
         }
     }
@@ -292,11 +342,13 @@ async function getSpeech(id, text) {
                         }
                     }
                 },
-                {
-                    match_phrase: {
-                        "text": escapeSpecialChars(text)
+                ...text.split(',')?.map(subquery => {
+                    return {
+                        match_phrase: {
+                            "text": escapeSpecialChars(subquery)
+                        }
                     }
-                }
+                }) || []
             ]
         }
     }
