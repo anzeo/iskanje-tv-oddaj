@@ -269,7 +269,7 @@ html {
 
 .allSubtitlesContainer {
   max-height: 350px;
-  overflow-y: scroll;
+  overflow-y: auto;
   background: rgb(26 26 26);
   padding: 0 15px 10px 15px;
   border-bottom-left-radius: 0.3rem;
@@ -300,7 +300,7 @@ html {
 
 .allSpeechContainer {
   max-height: 350px;
-  overflow-y: scroll;
+  overflow-y: auto;
   background: rgb(26 26 26);
   padding: 10px 15px 10px 15px;
   border-bottom-left-radius: 0.3rem;
@@ -340,9 +340,10 @@ html {
   }
 
   .matchedSubtitlesContainer {
-    overflow-y: scroll;
+    overflow-y: auto;
     position: absolute;
     height: 100%;
+    width: 100%;
   }
 
   .transcription {
@@ -358,6 +359,30 @@ html {
     color: #e0a56c;
   }
 }
+
+//#videoModal {
+//  ::-webkit-scrollbar {
+//    width: 6px;
+//    height: 6px;
+//  }
+//
+//  /* Track */
+//  ::-webkit-scrollbar-track {
+//    background: #363636;
+//    border-radius: 3px;
+//  }
+//
+//  /* Handle */
+//  ::-webkit-scrollbar-thumb {
+//    background: #565656;
+//    border-radius: 3px;
+//  }
+//
+//  /* Handle on hover */
+//  ::-webkit-scrollbar-thumb:hover {
+//    background: #4b4b4b;
+//  }
+//}
 
 @media only screen and (max-width: 992px) {
   #videoModal .modal-dialog {
