@@ -90,36 +90,66 @@ router.get('/search', (req, res) => {
                                         }
                                     },
                                     {
-                                        nested: {
-                                            path: "subtitles",
-                                            query: {
-                                                bool: {
-                                                    must: req.query.searchQuery?.split(',')?.map(subquery => {
-                                                        return {
+                                        bool: {
+                                            must: req.query.searchQuery?.split(',')?.map(subquery => {
+                                                return {
+                                                    nested: {
+                                                        path: "subtitles",
+                                                        query: {
                                                             match_phrase: {
                                                                 "subtitles.text": escapeSpecialChars(subquery)
                                                             }
                                                         }
-                                                    }) || []
+                                                    }
                                                 }
-                                            }
+                                            }) || [],
+                                            _name: "subtitlesQuery"
                                         }
+                                        // nested: {
+                                        //     path: "subtitles",
+                                        //     query: {
+                                        //         bool: {
+                                        //             must: req.query.searchQuery?.split(',')?.map(subquery => {
+                                        //                 return {
+                                        //                     match_phrase: {
+                                        //                         "subtitles.text": escapeSpecialChars(subquery)
+                                        //                     }
+                                        //                 }
+                                        //             }) || []
+                                        //         }
+                                        //     }
+                                        // }
                                     },
                                     {
-                                        nested: {
-                                            path: "speech",
-                                            query: {
-                                                bool: {
-                                                    must: req.query.searchQuery?.split(',')?.map(subquery => {
-                                                        return {
+                                        bool: {
+                                            must: req.query.searchQuery?.split(',')?.map(subquery => {
+                                                return {
+                                                    nested: {
+                                                        path: "speech",
+                                                        query: {
                                                             match_phrase: {
                                                                 "speech.text": escapeSpecialChars(subquery)
                                                             }
                                                         }
-                                                    }) || []
+                                                    }
                                                 }
-                                            }
+                                            }) || [],
+                                            _name: "speechQuery"
                                         }
+                                        // nested: {
+                                        //     path: "speech",
+                                        //     query: {
+                                        //         bool: {
+                                        //             must: req.query.searchQuery?.split(',')?.map(subquery => {
+                                        //                 return {
+                                        //                     match_phrase: {
+                                        //                         "speech.text": escapeSpecialChars(subquery)
+                                        //                     }
+                                        //                 }
+                                        //             }) || []
+                                        //         }
+                                        //     }
+                                        // }
                                     }
                                 ]
                             }
@@ -154,36 +184,66 @@ router.get('/search', (req, res) => {
                         }
                     }) || [] : [],
                     ...req.query.subtitles ? [{
-                        nested: {
-                            path: "subtitles",
-                            query: {
-                                bool: {
-                                    must: req.query.subtitles.split(',')?.map(subquery => {
-                                        return {
+                        bool: {
+                            must: req.query.subtitles.split(',')?.map(subquery => {
+                                return {
+                                    nested: {
+                                        path: "subtitles",
+                                        query: {
                                             match_phrase: {
                                                 "subtitles.text": escapeSpecialChars(subquery)
                                             }
                                         }
-                                    }) || []
+                                    }
                                 }
-                            }
+                            }) || [],
+                            _name: "subtitlesQuery"
                         }
+                        // nested: {
+                        //     path: "subtitles",
+                        //     query: {
+                        //         bool: {
+                        //             should: req.query.subtitles.split(',')?.map(subquery => {
+                        //                 return {
+                        //                     match_phrase: {
+                        //                         "subtitles.text": escapeSpecialChars(subquery)
+                        //                     }
+                        //                 }
+                        //             }) || []
+                        //         }
+                        //     }
+                        // }
                     }] : [],
                     ...req.query.speech ? [{
-                        nested: {
-                            path: "speech",
-                            query: {
-                                bool: {
-                                    must: req.query.speech.split(',')?.map(subquery => {
-                                        return {
+                        bool: {
+                            must: req.query.speech.split(',')?.map(subquery => {
+                                return {
+                                    nested: {
+                                        path: "speech",
+                                        query: {
                                             match_phrase: {
                                                 "speech.text": escapeSpecialChars(subquery)
                                             }
                                         }
-                                    }) || []
+                                    }
                                 }
-                            }
+                            }) || [],
+                            _name: "speechQuery"
                         }
+                        // nested: {
+                        //     path: "speech",
+                        //     query: {
+                        //         bool: {
+                        //             should: req.query.speech.split(',')?.map(subquery => {
+                        //                 return {
+                        //                     match_phrase: {
+                        //                         "speech.text": escapeSpecialChars(subquery)
+                        //                     }
+                        //                 }
+                        //             }) || []
+                        //         }
+                        //     }
+                        // }
                     }] : [],
                     {
                         range: {
@@ -234,13 +294,15 @@ router.get('/search', (req, res) => {
             if ((req.query.searchQuery && req.query.searchQuery !== '') || (req.query.subtitles && req.query.subtitles !== '') || (req.query.speech && req.query.speech !== ''))
                 for (const entry of resp.hits.hits) {
                     let tmp = entry
+                    let subtitlesQuery = entry.matched_queries && entry.matched_queries.findIndex(item => item === "subtitlesQuery") !== -1
+                    let speechQuery = entry.matched_queries && entry.matched_queries.findIndex(item => item === "speechQuery") !== -1
                     tmp._source.matchedSubtitles = []
                     tmp._source.matchedSpeech = []
-                    if ((req.query.searchQuery && req.query.searchQuery !== '') || (req.query.subtitles && req.query.subtitles !== ''))
+                    if (subtitlesQuery && ((req.query.searchQuery && req.query.searchQuery !== '') || (req.query.subtitles && req.query.subtitles !== '')))
                         await getSubtitles(entry._source.metadata.id, req.query.searchQuery || req.query.subtitles).then(val => {
                             tmp._source.matchedSubtitles = val
                         })
-                    if ((req.query.searchQuery && req.query.searchQuery !== '') || (req.query.speech && req.query.speech !== ''))
+                    if (speechQuery && ((req.query.searchQuery && req.query.searchQuery !== '') || (req.query.speech && req.query.speech !== '')))
                         await getSpeech(entry._source.metadata.id, req.query.searchQuery || req.query.speech).then(val => {
                             tmp._source.matchedSpeech = val
                         })
@@ -267,13 +329,17 @@ async function getSubtitles(id, text) {
                         }
                     }
                 },
-                ...text.split(',')?.map(subquery => {
-                    return {
-                        match_phrase: {
-                            "text": escapeSpecialChars(subquery)
-                        }
+                {
+                    bool: {
+                        should: text.split(',')?.map(subquery => {
+                            return {
+                                match_phrase: {
+                                    "text": escapeSpecialChars(subquery)
+                                }
+                            }
+                        }) || []
                     }
-                }) || []
+                }
             ]
         }
     }
@@ -342,13 +408,17 @@ async function getSpeech(id, text) {
                         }
                     }
                 },
-                ...text.split(',')?.map(subquery => {
-                    return {
-                        match_phrase: {
-                            "text": escapeSpecialChars(subquery)
-                        }
+                {
+                    bool: {
+                        should: text.split(',')?.map(subquery => {
+                            return {
+                                match_phrase: {
+                                    "text": escapeSpecialChars(subquery)
+                                }
+                            }
+                        }) || []
                     }
-                }) || []
+                }
             ]
         }
     }
