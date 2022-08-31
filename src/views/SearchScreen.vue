@@ -194,6 +194,9 @@
               <vue-feather type="sliders" size="13"
                            style="color: rgb(160, 160, 160); transform: rotate(90deg)"></vue-feather>
             </small>
+            <p class="mb-0 mt-3 fw-bolder">Iskanje po besedah, ki se ne pojavijo nujno ena za drugo</p>
+            <p class="mb-0 mt-0"><small>Znak "," ločuje nize, ki se morajo v polju pojaviti, vendar ne nujno v tem zaporedju</small></p>
+            <small><b>Primer vnosa: </b><em>iskalni niz1, iskalni niz2</em></small>
           </div>
         </b-modal>
 
